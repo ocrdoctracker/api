@@ -1,0 +1,38 @@
+|-- .env
+|-- .gitignore
+|-- index.js
+|-- LICENSE
+|-- nodemon.json
+|-- package-lock.json
+|-- package.json
+|-- README.md
+|-- src
+    |-- config
+        |-- env.js
+        |-- swagger.js
+    |-- constants
+        |-- auth.constant.js
+        |-- doc-request.constant.js
+        |-- user.constant.js
+    |-- controllers
+        |-- auth.controller.js
+        |-- doc-request.controller.js
+        |-- user.controller.js
+    |-- db
+        |-- db.js
+    |-- middlewares
+        |-- async.js
+        |-- error-handler.js
+    |-- routes
+        |-- auth.routes.js
+        |-- doc-request.routes.js
+        |-- index.routes.js
+        |-- user.routes.js
+    |-- services
+        |-- auth.service.js
+        |-- doc-request.service.js
+        |-- email.service.js
+        |-- user.service.js
+    |-- utils
+        |-- utils.js
+|-- vercel.json
