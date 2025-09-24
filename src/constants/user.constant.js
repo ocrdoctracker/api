@@ -1,4 +1,5 @@
 export const ERROR_USER_NOT_FOUND = 'User not found';
+export const ERROR_USER_EXISTS = 'User already exists';
 export const CREATE_SUCCESS = 'User successfully saved';
 export const ERROR_RECENT_PLACE_NOT_FOUND = 'Recent place not found';
 export const SAVE_RECENT_PLACE_SUCCESS = 'Place has been successfully saved to your recent places';

@@ -1,6 +1,7 @@
 
 import {
-  ERROR_USER_NOT_FOUND,
+  ERROR_USER_NOT_FOUND, 
+  ERROR_USER_EXISTS, 
   CREATE_SUCCESS
 } from '../constants/user.constant.js';
 import { hashPassword } from '../utils/utils.js'
