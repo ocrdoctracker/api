@@ -54,6 +54,13 @@ const router = Router();
  *                       type: string
  *                     notifications:
  *                       type: string
+ *                     department:
+ *                       type: object
+ *                       properties:
+ *                         departmentId:
+ *                           type: string
+ *                         name:
+ *                           type: string
  *       401:
  *         description: Invalid credentials
  */

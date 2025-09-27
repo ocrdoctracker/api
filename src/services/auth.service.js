@@ -15,14 +15,29 @@ export async function findActiveUserByEmail(email) {
 }
 
 export async function findActiveUserByUsername(username) {
-  // Parameterized Postgres query
   const sql = `
-    SELECT *
-    FROM dbo."User"
-    WHERE "Username" = $1 AND "Active" = true
+    SELECT 
+      u."UserId",
+      u."Name",
+      u."Username",
+      u."Email",
+      u."Password",
+      u."DepartmentId",
+      u."Active",
+      json_build_object(
+        'departmentId', d."DepartmentId",
+        'name', d."Name",
+        'active', d."Active"
+      ) AS department
+    FROM dbo."User" u
+    LEFT JOIN dbo."Department" d ON u."DepartmentId" = d."DepartmentId"
+    WHERE u."Username" = $1 
+      AND u."Active" = true
     LIMIT 1;
   `;
+
   const result = await pool.query(sql, [username]);
   if (result.rows.length === 0) return null;
-  return camelcaseKeys(result.rows[0]);
+
+  return camelcaseKeys(result.rows[0], { deep: true });
 }
