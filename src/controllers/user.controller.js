@@ -7,6 +7,8 @@ import {
 import { hashPassword } from '../utils/utils.js'
 import { getUserById, createUser } from '../services/user.service.js';
 import { findActiveUserByEmail } from '../services/auth.service.js';
+import { getDepartmentById } from "../services/department.service.js"
+import { ERROR_DEPARTMENT_NOT_FOUND } from "../constants/department.constant.js"
 
 export async function getUser(req, res) {
   const { userId } = req.params;
@@ -28,6 +30,12 @@ export async function create(req, res) {
   let user;
 
   try {
+    const department = await getDepartmentById(!isNaN(Number(departmentId)) ? Number(departmentId) : 0);
+    if (!department) {
+      return res
+        .status(400)
+        .json({ success: false, message: ERROR_DEPARTMENT_NOT_FOUND });
+    }
     user = await findActiveUserByEmail(email);
     if(!user) {
       const passwordHash = await hashPassword(password);
