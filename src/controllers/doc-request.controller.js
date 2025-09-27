@@ -11,6 +11,8 @@ import {
   updateDocRequestStatus,
   updateDocRequest,
   updateDocRequestFile,
+  getDocRequestFromUser,
+  getDocRequestAssignedToUser
 } from "../services/doc-request.service.js";
 import {
   readSingleFileFromMultipart,
@@ -27,7 +29,8 @@ import cloudinary from "../config/cloudinaryConfig.js";
 import { getDepartmentById } from "../services/department.service.js";
 import { ERROR_DEPARTMENT_NOT_FOUND } from "../constants/department.constant.js";
 import { loadDocumentTypes } from "../services/common.service.js";
-const documentTypesobj = Object.assign({}, ...loadDocumentTypes());
+const documentTypes = loadDocumentTypes();
+const documentTypesobj = Object.assign({}, ...documentTypes);
 
 const clfPromise = loadLocalClassifier()
   .then((clf) => {
@@ -52,8 +55,38 @@ export async function getDocRequest(req, res) {
       .status(400)
       .json({ success: false, message: ERROR_DOCREQUEST_NOT_FOUND });
   }
-  delete docRequest.password;
-  delete docRequest.currentOtp;
+  return res.json({ success: true, data: docRequest });
+}
+
+export async function getDocRequestAssigned(req, res) {
+  const { userId, requestStatus, pageSize, pageIndex } = req.query;
+  const user = await getUserById(userId);
+  if (!user) {
+    return res
+      .status(400)
+      .json({ success: false, message: ERROR_USER_NOT_FOUND });
+  }
+  let docRequest = await getDocRequestAssignedToUser(userId, requestStatus.split(","), pageSize, pageIndex);
+  docRequest.results.map(x=> {
+    x.purpose = documentTypesobj[x.purpose];
+    return x;
+  });
+  return res.json({ success: true, data: docRequest });
+}
+
+export async function getDocRequestList(req, res) {
+  const { fromUserId, requestStatus, pageSize, pageIndex } = req.query;
+  const user = await getUserById(fromUserId);
+  if (!user) {
+    return res
+      .status(400)
+      .json({ success: false, message: ERROR_USER_NOT_FOUND });
+  }
+  let docRequest = await getDocRequestFromUser(fromUserId, requestStatus.split(","), pageSize, pageIndex);
+  docRequest.results.map(x=> {
+    x.purpose = documentTypesobj[x.purpose];
+    return x;
+  });
   return res.json({ success: true, data: docRequest });
 }
 

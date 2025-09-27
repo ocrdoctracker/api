@@ -3,15 +3,184 @@ import camelcaseKeys from "camelcase-keys";
 
 export async function getDocRequestById(docRequestId) {
   const sql = `
-    SELECT *
-    FROM dbo."DocRequest"
-    WHERE "DocRequestId" = $1
-    LIMIT 1;
+    SELECT 
+    dc."DocRequestId", 
+    dc."FromUserId", 
+    dc."Purpose", 
+    dc."DateRequested", 
+    dc."DateAssigned", 
+    dc."DateProcessStarted", 
+    dc."DateProcessEnd", 
+    dc."DateCompleted", 
+    dc."DateClosed", 
+    dc."DateLastUpdated", 
+    dc."RequestStatus", 
+    dc."Description", 
+    dc."RejectReason", 
+    dc."CancelReason", 
+    dc."RequestNo", 
+    dc."DocumentFile", 
+    dc."Classification",
+      json_build_object(
+        'userId', fu."UserId",
+        'name', fu."Name",
+        'username', fu."Username",
+        'email', fu."Email",
+        'department', json_build_object(
+                        'departmentId', fud."DepartmentId",
+                        'name', fud."Name",
+                        'active', fud."Active"
+                      ),
+        'active', fu."Active"
+      ) AS "fromUser",
+      json_build_object(
+        'departmentId', d."DepartmentId",
+        'name', d."Name",
+        'active', d."Active"
+      ) AS "assignedDepartment",
+           COUNT(dc.*) OVER() AS total_rows
+    FROM dbo."DocRequest" dc
+    LEFT JOIN dbo."User" fu ON dc."FromUserId" = fu."UserId"
+    LEFT JOIN dbo."Department" fud ON fu."DepartmentId" = fud."DepartmentId"
+    LEFT JOIN dbo."Department" d ON dc."AssignedDepartmentId" = d."DepartmentId"
+    LEFT JOIN dbo."User" u ON d."DepartmentId" = u."DepartmentId"
+    WHERE dc."DocRequestId" = $1;
   `;
   const result = await pool.query(sql, [docRequestId]);
   if (result.rows.length === 0) return null;
   return camelcaseKeys(result.rows[0]);
 }
+
+export async function getDocRequestAssignedToUser(fromUserId, requestStatus, pageSize = 10, pageIndex = 0) {
+  const size = Number(pageSize) > 0 ? Number(pageSize) : 10;
+  const index = Number(pageIndex) >= 0 ? Number(pageIndex) : 0;
+  const offset = index * size;
+
+  const sql = `
+    SELECT 
+    dc."DocRequestId", 
+    dc."FromUserId", 
+    dc."Purpose", 
+    dc."DateRequested", 
+    dc."DateAssigned", 
+    dc."DateProcessStarted", 
+    dc."DateProcessEnd", 
+    dc."DateCompleted", 
+    dc."DateClosed", 
+    dc."DateLastUpdated", 
+    dc."RequestStatus", 
+    dc."Description", 
+    dc."RejectReason", 
+    dc."CancelReason", 
+    dc."RequestNo", 
+    dc."DocumentFile", 
+    dc."Classification",
+      json_build_object(
+        'userId', fu."UserId",
+        'name', fu."Name",
+        'username', fu."Username",
+        'email', fu."Email",
+        'department', json_build_object(
+                        'departmentId', fud."DepartmentId",
+                        'name', fud."Name",
+                        'active', fud."Active"
+                      ),
+        'active', fu."Active"
+      ) AS "fromUser",
+      json_build_object(
+        'departmentId', d."DepartmentId",
+        'name', d."Name",
+        'active', d."Active"
+      ) AS "assignedDepartment",
+           COUNT(dc.*) OVER() AS total_rows
+    FROM dbo."DocRequest" dc
+    LEFT JOIN dbo."User" fu ON dc."FromUserId" = fu."UserId"
+    LEFT JOIN dbo."Department" fud ON fu."DepartmentId" = fud."DepartmentId"
+    LEFT JOIN dbo."Department" d ON dc."AssignedDepartmentId" = d."DepartmentId"
+    LEFT JOIN dbo."User" u ON d."DepartmentId" = u."DepartmentId"
+    WHERE u."UserId" = $1 AND ($2::text[] IS NULL OR dc."RequestStatus" = ANY($2))
+    ORDER BY dc."DateRequested" DESC
+    LIMIT $3 OFFSET $4;
+  `;
+
+  const result = await pool.query(sql, [fromUserId, requestStatus, size, offset]);
+
+  const totalRows = result.rows.length > 0 ? Number(result.rows[0].total_rows) : 0;
+
+  return {
+    total: Math.ceil(totalRows / size),
+    results: camelcaseKeys(result.rows.map(r => {
+      const { total_rows, ...rest } = r;
+      return rest;
+    })),
+  };
+}
+
+export async function getDocRequestFromUser(fromUserId, requestStatus, pageSize = 10, pageIndex = 0) {
+  const size = Number(pageSize) > 0 ? Number(pageSize) : 10;
+  const index = Number(pageIndex) >= 0 ? Number(pageIndex) : 0;
+  const offset = index * size;
+
+  const sql = `
+    SELECT 
+    dc."DocRequestId", 
+    dc."FromUserId", 
+    dc."Purpose", 
+    dc."DateRequested", 
+    dc."DateAssigned", 
+    dc."DateProcessStarted", 
+    dc."DateProcessEnd", 
+    dc."DateCompleted", 
+    dc."DateClosed", 
+    dc."DateLastUpdated", 
+    dc."RequestStatus", 
+    dc."Description", 
+    dc."RejectReason", 
+    dc."CancelReason", 
+    dc."RequestNo", 
+    dc."DocumentFile", 
+    dc."Classification",
+      json_build_object(
+        'userId', fu."UserId",
+        'name', fu."Name",
+        'username', fu."Username",
+        'email', fu."Email",
+        'department', json_build_object(
+                        'departmentId', fud."DepartmentId",
+                        'name', fud."Name",
+                        'active', fud."Active"
+                      ),
+        'active', fu."Active"
+      ) AS "fromUser",
+      json_build_object(
+        'departmentId', d."DepartmentId",
+        'name', d."Name",
+        'active', d."Active"
+      ) AS "assignedDepartment",
+           COUNT(*) OVER() AS total_rows
+    FROM dbo."DocRequest" dc
+    LEFT JOIN dbo."User" fu ON dc."FromUserId" = fu."UserId"
+    LEFT JOIN dbo."Department" fud ON fu."DepartmentId" = fud."DepartmentId"
+    LEFT JOIN dbo."Department" d ON dc."AssignedDepartmentId" = d."DepartmentId"
+    LEFT JOIN dbo."User" u ON d."DepartmentId" = u."DepartmentId"
+    WHERE dc."FromUserId" = $1 AND ($2::text[] IS NULL OR dc."RequestStatus" = ANY($2))
+    ORDER BY dc."DateRequested" DESC
+    LIMIT $3 OFFSET $4;
+  `;
+
+  const result = await pool.query(sql, [fromUserId, requestStatus, size, offset]);
+
+  const totalRows = result.rows.length > 0 ? Number(result.rows[0].total_rows) : 0;
+
+  return {
+    total: Math.ceil(totalRows / size),
+    results: camelcaseKeys(result.rows.map(r => {
+      const { total_rows, ...rest } = r;
+      return rest;
+    })),
+  };
+}
+
 
 export async function createDocRequest(
   fromUserId,

@@ -12,10 +12,273 @@ import {
   create,
   update,
   updateStatus,
-  upload
+  upload,
+  getDocRequestList,
+  getDocRequestAssigned
 } from "../controllers/doc-request.controller.js";
+import { query } from "express-validator";
 
 const router = Router();
+
+/**
+ * @openapi
+ * /api/doc-request/assigned:
+ *   get:
+ *     tags: [Document Request]
+ *     summary: Get Document Request assigned to user
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         description: Filter by user assigned to the request
+ *       - in: query
+ *         name: requestStatus
+ *         description: >
+ *           Filter by one or more statuses. Accepts comma-separated values
+ *           (e.g., `PENDING,APPROVED`) or repeated keys
+ *           (e.g., `?requestStatus=PENDING&requestStatus=APPROVED`).
+ *         required: false
+ *         style: form
+ *         explode: false
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [PENDING, CANCELLED, REJECTED, APPROVED, PROCESSING, COMPLETED, CLOSED]
+ *         examples:
+ *           single:
+ *             summary: Single status
+ *             value: [PENDING]
+ *           multipleComma:
+ *             summary: Multiple (comma-separated)
+ *             value: [PENDING, APPROVED]
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page (default 10)
+ *       - in: query
+ *         name: pageIndex
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *         description: Page index starting from 0 (default 0)
+ *     responses:
+ *       200:
+ *         description: Document Request assigned to user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       docRequestId:
+ *                         type: string
+ *                       fromUserId:
+ *                         type: string
+ *                       purpose:
+ *                         type: string
+ *                       dateRequested:
+ *                         type: string
+ *                       assignedDepartment:
+ *                         type: object
+ *                       dateAssigned:
+ *                         type: string
+ *                       dateProcessStarted:
+ *                         type: string
+ *                       dateProcessEnd:
+ *                         type: string
+ *                       dateCompleted:
+ *                         type: string
+ *                       requestStatus:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       requestNo:
+ *                         type: string
+ *                       rejectReason:
+ *                         type: string
+ *                       cancelReason:
+ *                         type: string
+ */
+router.get(
+  "/assigned",
+  [
+    query("userId")
+      .optional()
+      .isInt().withMessage("userId must be a number"),
+
+    query("requestStatus")
+      .optional()
+      .customSanitizer((value) => {
+        // Always return an array
+        if (Array.isArray(value)) return value;
+        return [value];
+      })
+      .custom((values) => {
+        values.forEach((v) => {
+          if (!["PENDING","CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].includes(v)) {
+            throw new Error(
+              `Invalid requestStatus: ${v}. Must be one of: ${["PENDING","CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].join(", ")}`
+            );
+          }
+        });
+        return true;
+      }),
+
+    query("pageSize")
+      .optional()
+      .isInt({ min: 1, max: 100 }).withMessage("pageSize must be between 1 and 100")
+      .toInt(),
+    query("pageIndex")
+      .optional()
+      .isInt({ min: 0 }).withMessage("pageIndex must be 0 or greater")
+      .toInt(),
+  ],
+  asyncHandler(getDocRequestAssigned)
+);
+
+/**
+ * @openapi
+ * /api/doc-request/list:
+ *   get:
+ *     tags: [Document Request]
+ *     summary: Get Document Request from user
+ *     parameters:
+ *       - in: query
+ *         name: fromUserId
+ *         schema:
+ *           type: string
+ *         description: Filter by user who created the request
+ *       - in: query
+ *         name: requestStatus
+ *         description: >
+ *           Filter by one or more statuses. Accepts comma-separated values
+ *           (e.g., `PENDING,APPROVED`) or repeated keys
+ *           (e.g., `?requestStatus=PENDING&requestStatus=APPROVED`).
+ *         required: false
+ *         style: form
+ *         explode: false
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [PENDING, CANCELLED, REJECTED, APPROVED, PROCESSING, COMPLETED, CLOSED]
+ *         examples:
+ *           single:
+ *             summary: Single status
+ *             value: [PENDING]
+ *           multipleComma:
+ *             summary: Multiple (comma-separated)
+ *             value: [PENDING, APPROVED]
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page (default 10)
+ *       - in: query
+ *         name: pageIndex
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *         description: Page index starting from 0 (default 0)
+ *     responses:
+ *       200:
+ *         description: Document Request list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       docRequestId:
+ *                         type: string
+ *                       fromUserId:
+ *                         type: string
+ *                       purpose:
+ *                         type: string
+ *                       dateRequested:
+ *                         type: string
+ *                       assignedDepartmentId:
+ *                         type: string
+ *                       dateAssigned:
+ *                         type: string
+ *                       dateProcessStarted:
+ *                         type: string
+ *                       dateProcessEnd:
+ *                         type: string
+ *                       dateCompleted:
+ *                         type: string
+ *                       requestStatus:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       requestNo:
+ *                         type: string
+ *                       rejectReason:
+ *                         type: string
+ *                       cancelReason:
+ *                         type: string
+ */
+
+router.get(
+  "/list",
+  [
+    query("fromUserId")
+      .optional()
+      .isInt().withMessage("fromUserId must be a number"),
+
+      
+    query("requestStatus")
+      .optional()
+      .customSanitizer((value) => {
+        // Always return an array
+        if (Array.isArray(value)) return value;
+        return [value];
+      })
+      .custom((values) => {
+        values.forEach((v) => {
+          if (!["PENDING","CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].includes(v)) {
+            throw new Error(
+              `Invalid requestStatus: ${v}. Must be one of: ${["PENDING","CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].join(", ")}`
+            );
+          }
+        });
+        return true;
+      }),
+      
+    query("pageSize")
+      .optional()
+      .isInt({ min: 1, max: 100 }).withMessage("pageSize must be between 1 and 100")
+      .toInt(),
+    query("pageIndex")
+      .optional()
+      .isInt({ min: 0 }).withMessage("pageIndex must be 0 or greater")
+      .toInt(),
+  ],
+  asyncHandler(getDocRequestList)
+);
 
 /**
  * @openapi
@@ -73,6 +336,7 @@ const router = Router();
  *                       type: string
  */
 router.get("/:docRequestId", asyncHandler(getDocRequest));
+
 
 /**
  * @openapi
@@ -166,7 +430,7 @@ router.post("/", asyncHandler(create));
  *           schema:
  *             type: object
  *             required:
- *               - requestStatus
+ *               - description
  *             properties:
  *               description:
  *                 type: string
