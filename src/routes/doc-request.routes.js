@@ -368,7 +368,7 @@ router.put(
 /**
  * @openapi
  * /api/doc-request/{docRequestId}/upload:
- *   post:
+ *   put:
  *     tags: [Document Request]
  *     summary: Upload a file for a Document Request
  *     description: |
@@ -419,7 +419,7 @@ router.put(
  *         description: Invalid data
  */
 
-router.post(
+router.put(
   "/:docRequestId/upload",
   [
     param("docRequestId")

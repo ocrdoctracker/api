@@ -1,0 +1,98 @@
+[
+  {
+    "TOR_OFFICIAL": "Transcript of Records / Official Transcript"
+  },
+  {
+    "TOR_CERTIFIED_TRUE_COPY": "Certified True Copies of TOR or parts thereof"
+  },
+  {
+    "CERT_GRADUATION_COMPLETION": "Certificate of Graduation / Certificate of Completion"
+  },
+  {
+    "CERT_ENROLLMENT": "Certificate of Enrollment"
+  },
+  {
+    "CERT_UNITS_EARNED": "Certificate of Units Earned"
+  },
+  {
+    "CERT_YEAR_LEVEL": "Certificate of Year Level / Year Standing"
+  },
+  {
+    "CERT_GOOD_MORAL": "Certificate of Good Moral Character"
+  },
+  {
+    "CERT_COURSE_DESCRIPTION": "Certificate of Course Description / Course Syllabus"
+  },
+  {
+    "CERT_GRADING_SYSTEM": "Certification of Grading System"
+  },
+  {
+    "CERT_MAXIMUM_LOAD": "Certification of Maximum Load"
+  },
+  {
+    "CERT_ACAD_STANDING": "Certificate of Academic Standing / Honors / Rank"
+  },
+  {
+    "CERT_NO_DISCIPLINARY_CASE": "Certification of No Pending Disciplinary Case"
+  },
+  {
+    "HONORABLE_DISMISSAL": "Honorable Dismissal / Permit to Transfer / Transfer Credentials"
+  },
+  {
+    "LETTER_NO_OBJECTION": "Letter of No Objection"
+  },
+  {
+    "LEAVE_OF_ABSENCE": "Leave of Absence / Readmission from Leave"
+  },
+  {
+    "PERMISSION_EXAM_DROPPING": "Permission for Examination / Dropping of Course"
+  },
+  {
+    "COMPLETION_OF_GRADE": "Completion of Grade (grade correction, makeup)"
+  },
+  {
+    "REMOVAL_OF_GRADE": "Removal of Grade"
+  },
+  {
+    "SUBJECT_SUBSTITUTION_VALIDATION": "Substitution / Validation of Subjects"
+  },
+  {
+    "APPLICATION_GRADUATION_CANDIDACY": "Application for Graduation / Candidacy for Graduation"
+  },
+  {
+    "DEANS_FORM": "Deans’ Form (for various academic purposes)"
+  },
+  {
+    "UNIVERSITY_CLEARANCE": "University / College Clearance"
+  },
+  {
+    "CERT_VERIFY_FOREIGN_CREDENTIALS": "Certification / Verification for Foreign Credentials (e.g. for foreign board exams)"
+  },
+  {
+    "CERT_ENGLISH_TRANSLATION": "English translation of diploma / documents"
+  },
+  {
+    "CERTIFIED_ACTUAL_TEXT_DIPLOMA": "Certified Actual Text of Diploma"
+  },
+  {
+    "CERT_GWA": "Certificate of GWA (General Weighted Average)"
+  },
+  {
+    "CERT_CONTRACT": "Certificate of Contract / No Contract"
+  },
+  {
+    "CERT_RANKING": "Certification of Ranking (for graduates)"
+  },
+  {
+    "CERT_RELATED_LEARNING_EXP": "Certification of Related Learning Experience"
+  },
+  {
+    "CERT_CAV": "Certification / Authentication & Verification (CAV) / Red Ribbon / Apostille"
+  },
+  {
+    "REQUEST_TRUE_COPY_GRADES": "Request for True Copy of Grades"
+  },
+  {
+    "OTHERS": "Others"
+  }
+]

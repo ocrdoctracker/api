@@ -7,9 +7,14 @@
       "config": {
         "includeFiles": ["model/**"]
       }
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
+    { "handle": "filesystem" },
     { "src": "/api/(.*)", "dest": "index.js" },
     { "src": "/(.*)", "dest": "index.js" }
   ],

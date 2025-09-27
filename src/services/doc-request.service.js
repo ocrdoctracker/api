@@ -24,7 +24,7 @@ export async function createDocRequest(
     INSERT INTO dbo."DocRequest"(
     "FromUserId", "AssignedDepartmentId", "Purpose", "DateRequested", "RequestStatus", "Description")
 	VALUES ($1, $2, $3, NOW(), $4, $5)
-    RETURNING "DocRequestId", "FromUserId", "Purpose", "DateRequested", "AssignedDepartmentId", "DateAssigned", "DateProcessStarted", "DateProcessEnd", "DateCompleted", "DateClosed", "DateLastUpdated", "RequestStatus", "Description", "RequestNo", "RejectReason", "CancelReason";
+    RETURNING *;
   `;
   const params = [fromUserId, assignedDepartmentId, purpose, requestStatus, description]; // Default OTP for now
   const result = await pool.query(sql, params);
@@ -39,7 +39,7 @@ export async function updateDocRequest(
     UPDATE dbo."DocRequest" set 
     "Description" = $2
     WHERE "DocRequestId" = $1
-    RETURNING "DocRequestId", "FromUserId", "Purpose", "DateRequested", "AssignedDepartmentId", "DateAssigned", "DateProcessStarted", "DateProcessEnd", "DateCompleted", "DateClosed", "DateLastUpdated", "RequestStatus", "Description", "RequestNo", "RejectReason", "CancelReason";
+    RETURNING *;
   `;
   const params = [docRequestId, description]; // Default OTP for now
   const result = await pool.query(sql, params);
@@ -111,3 +111,14 @@ export async function updateDocRequestStatus(
   return camelcaseKeys(result.rows[0]);
 }
 
+export async function updateDocRequestFile(docRequestId, documentFile, classification) {
+  const sql = `
+  UPDATE dbo."DocRequest"
+  SET "DocumentFile" = COALESCE("DocumentFile", '{}'::jsonb) || $2::jsonb, "Classification" = COALESCE("Classification", '{}'::jsonb) || $3::jsonb
+  WHERE "DocRequestId" = $1
+  RETURNING *;
+`;
+  const params = [docRequestId, documentFile, classification]; // Default OTP for now
+  const result = await pool.query(sql, params);
+  return camelcaseKeys(result.rows[0]);
+}

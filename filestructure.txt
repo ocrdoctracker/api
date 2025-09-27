@@ -11,6 +11,8 @@
 |-- nodemon.json
 |-- package-lock.json
 |-- package.json
+|-- public
+    |-- document-types.json
 |-- README.md
 |-- scripts
     |-- train-bayes.js
@@ -28,6 +30,7 @@
         |-- user.constant.js
     |-- controllers
         |-- auth.controller.js
+        |-- common.controller.js
         |-- department.controller.js
         |-- doc-request.controller.js
         |-- user.controller.js
@@ -38,12 +41,14 @@
         |-- error-handler.js
     |-- routes
         |-- auth.routes.js
+        |-- common.routes.js
         |-- department.routes.js
         |-- doc-request.routes.js
         |-- index.routes.js
         |-- user.routes.js
     |-- services
         |-- auth.service.js
+        |-- common.service.js
         |-- department.service.js
         |-- doc-request.service.js
         |-- email.service.js

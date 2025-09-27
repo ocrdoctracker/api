@@ -9,21 +9,35 @@ import {
   getDocRequestById,
   createDocRequest,
   updateDocRequestStatus,
-  updateDocRequest
+  updateDocRequest,
+  updateDocRequestFile,
 } from "../services/doc-request.service.js";
-import { readSingleFileFromMultipart, extractTextFromBuffer, sanitizePublicId } from "../utils/utils.js";
+import {
+  readSingleFileFromMultipart,
+  extractTextFromBuffer,
+  sanitizePublicId,
+} from "../utils/utils.js";
 import { getUserById } from "../services/user.service.js";
-import { loadLocalClassifier, classifyLocal } from "../classifiers/localBayes.js";
+import {
+  loadLocalClassifier,
+  classifyLocal,
+} from "../classifiers/localBayes.js";
 import { env } from "../config/env.js";
 import cloudinary from "../config/cloudinaryConfig.js";
-import { getDepartmentById } from "../services/department.service.js"
-import { ERROR_DEPARTMENT_NOT_FOUND } from "../constants/department.constant.js"
+import { getDepartmentById } from "../services/department.service.js";
+import { ERROR_DEPARTMENT_NOT_FOUND } from "../constants/department.constant.js";
+import { loadDocumentTypes } from "../services/common.service.js";
+const documentTypesobj = Object.assign({}, ...loadDocumentTypes());
 
 const clfPromise = loadLocalClassifier()
-  .then((clf) => { 
-    console.log("✅ Local Bayes model loaded."); 
-    return clf; })
-  .catch((e) => { console.error("❌ Failed to load model:", e.message); process.exit(1); });
+  .then((clf) => {
+    console.log("✅ Local Bayes model loaded.");
+    return clf;
+  })
+  .catch((e) => {
+    console.error("❌ Failed to load model:", e.message);
+    process.exit(1);
+  });
 
 export async function getDocRequest(req, res) {
   const { docRequestId } = req.params;
@@ -84,10 +98,7 @@ export async function update(req, res) {
   const { description } = req.body;
   let docRequest;
   try {
-    docRequest = await updateDocRequest(
-      docRequestId,
-      description
-    );
+    docRequest = await updateDocRequest(docRequestId, description);
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
@@ -137,25 +148,21 @@ export async function updateStatus(req, res) {
         (docRequest?.requestStatus === DOCREQUEST_STATUS.COMPLETED &&
           requestStatus === DOCREQUEST_STATUS.PROCESSING)
       ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: `Document Request was already ${docRequest?.requestStatus
-              .toString()
-              .toLowerCase()}`,
-          });
+        return res.status(400).json({
+          success: false,
+          message: `Document Request was already ${docRequest?.requestStatus
+            .toString()
+            .toLowerCase()}`,
+        });
       }
 
       if (requestStatus === docRequest?.requestStatus) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: `Document Request was already ${requestStatus
-              .toString()
-              .toLowerCase()}`,
-          });
+        return res.status(400).json({
+          success: false,
+          message: `Document Request was already ${requestStatus
+            .toString()
+            .toLowerCase()}`,
+        });
       }
 
       if (
@@ -164,12 +171,10 @@ export async function updateStatus(req, res) {
           requestStatus === DOCREQUEST_STATUS.CLOSED ||
           requestStatus === DOCREQUEST_STATUS.COMPLETED)
       ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Document Request was not yet Approved",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Document Request was not yet Approved",
+        });
       }
 
       if (
@@ -178,24 +183,20 @@ export async function updateStatus(req, res) {
         (requestStatus === DOCREQUEST_STATUS.COMPLETED ||
           requestStatus === DOCREQUEST_STATUS.CLOSED)
       ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Document Request was not yet Porcessed",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Document Request was not yet Porcessed",
+        });
       }
 
       if (
         docRequest?.requestStatus === DOCREQUEST_STATUS.PROCESSING &&
         requestStatus === DOCREQUEST_STATUS.CLOSED
       ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Document Request was not yet Completed",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Document Request was not yet Completed",
+        });
       }
       docRequest = await updateDocRequestStatus(
         docRequestId,
@@ -211,45 +212,66 @@ export async function updateStatus(req, res) {
   return res.json({ success: true, data: docRequest, message: UPDATE_SUCCESS });
 }
 
-
 export async function upload(req, res) {
   const { docRequestId } = req.params;
-
+  let docRequest;
   try {
-    // ensure the doc request exists
-    const docRequest = await getDocRequestById(docRequestId);
-    if (!docRequest) {
-      return res.status(400).json({ success: false, message: ERROR_DOCREQUEST_NOT_FOUND });
-    }
-
     // read single file (10MB cap)
-    const { filename, mimeType, size, buffer } = await readSingleFileFromMultipart(req);
+    const { filename, mimeType, size, buffer } =
+      await readSingleFileFromMultipart(req);
 
     if (!size) {
-      return res.status(400).json({ success: false, message: "No file received" });
+      return res
+        .status(400)
+        .json({ success: false, message: "No file received" });
     }
 
+    // ensure the doc request exists
+    docRequest = await getDocRequestById(docRequestId);
+    if (!docRequest) {
+      return res
+        .status(400)
+        .json({ success: false, message: ERROR_DOCREQUEST_NOT_FOUND });
+    }
     // Extract text (best-effort). If not needed, remove this block.
     let extractedText = "";
     try {
       extractedText = await extractTextFromBuffer(filename, buffer);
-      if (!extractedText) return res.status(400).json({ error: "No text extracted" });
+      if (!extractedText)
+        return res.status(400).json({ error: "No text extracted" });
     } catch (e) {
       // non-fatal: continue without extracted text
       extractedText = "";
-      if (!extractedText) return res.status(400).json({ error: "No text extracted" });
+      if (!extractedText)
+        return res.status(400).json({ error: "No text extracted" });
     }
 
     const clf = await clfPromise;
-    const cnnResults = classifyLocal(clf, extractedText, { threshold: Number(env?.cnn?.threshold), otherLabel: env?.cnn?.otherLabel, topK: 5 });
-    
+    const cnnResults = classifyLocal(clf, extractedText, {
+      threshold: Number(env?.cnn?.threshold),
+      otherLabel: env?.cnn?.otherLabel,
+      topK: 5,
+    });
+    if (
+      !cnnResults?.best?.label ||
+      cnnResults?.best?.label === "" ||
+      !documentTypesobj[cnnResults?.best?.label || ""] ||
+      (docRequest?.purpose.toLowerCase().trim() !== "others" &&
+        cnnResults?.best?.label !== docRequest?.purpose) ||
+      (docRequest?.purpose.toLowerCase().trim() !== "others" &&
+        Number(cnnResults?.best?.score || 0) <= 0.5)
+    ) {
+      throw new Error(
+        "The uploaded document does not match the requested purpose. Please review the file."
+      );
+    }
     const public_id = `documents/${sanitizePublicId(filename)}`;
-     const uploadResult = await new Promise((resolve, reject) => {
+    const uploadResult = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
           resource_type: "raw",
-          public_id,           // stable name (folder + clean base)
-          overwrite: true,     // replace if same public_id
+          public_id, // stable name (folder + clean base)
+          overwrite: true, // replace if same public_id
           use_filename: false, // we control public_id ourselves
           unique_filename: false,
         },
@@ -257,26 +279,41 @@ export async function upload(req, res) {
       );
       stream.end(buffer);
     });
-    // return res.json({ engine: "bayes", filename, best: result.best, candidates: result.candidates });
-
     // TODO: Persist file (DB / S3 / Cloudinary) and link to docRequestId.
     // Example:
     // const stored = await saveDocRequestFile({ docRequestId, filename, mimeType, buffer, extractedText });
 
-    return res.json({
-      success: true,
-      data: {
-        docRequestId: String(docRequestId),
-        filename,
-        mimeType,
-        size,
-        extractedText, // keep or remove based on your needs,
-        cloudinary: uploadResult,
-        cnn: cnnResults
+    if (!uploadResult?.public_id) {
+      throw new Error("Unable to upload to cloud storage");
+    }
+
+    docRequest = await updateDocRequestFile(
+      docRequestId,
+      {
+        filename, mimeType,
+        publicId: uploadResult.public_id,
+        createdAt: uploadResult.created_at,
+        bytes: uploadResult.bytes,
+        signature: uploadResult.signature,
+        resourceType: uploadResult.resource_type,
+        displayName: uploadResult.display_name,
+        url: uploadResult.url,
+        secureUrl: uploadResult.secure_url,
       },
-      message: "UPLOAD_SUCCESS",
-    });
+      {
+        label: cnnResults?.best?.label,
+        score: cnnResults?.best?.score,
+        name: documentTypesobj[cnnResults?.best?.label || ""],
+      }
+    );
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message || "Upload failed" });
+    return res
+      .status(400)
+      .json({ success: false, message: error.message || "Upload failed" });
   }
+  return res.json({
+    success: true,
+    data: docRequest,
+    message: "UPLOAD_SUCCESS",
+  });
 }
