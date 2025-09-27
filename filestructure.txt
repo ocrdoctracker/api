@@ -1,5 +1,8 @@
 |-- .env
 |-- .gitignore
+|-- .vercel
+    |-- project.json
+    |-- README.txt
 |-- dataset.csv
 |-- index.js
 |-- LICENSE
