@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import path from "node:path";
 dotenv.config();
 
 export const env = {
@@ -26,5 +27,18 @@ export const env = {
     evTemplate: process.env.EV_TEMPLATE,
     evResetTemplate: process.env.EV_RESET_TEMPLATE,
     
+  },
+  cnn: {
+    dataSetPath: process.env.CNN_DATASET_PATH || path.join(__dirname, "..", "dataset.csv"),
+    modelPath: process.env.CNN_MODEL_PATH,
+    temperature: process.env.CNN_TEMPERATURE || 1.0,
+    otherLabel: process.env.CNN_OTHER_LABEL || "Other",
+    minTokens: process.env.CNN_MIN_TOKENS || 2,
+    threshold: process.env.CNN_THRESHOLD || 0.6,
+  },
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET
   }
 };

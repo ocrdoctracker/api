@@ -15,17 +15,18 @@ export async function getDocRequestById(docRequestId) {
 
 export async function createDocRequest(
   fromUserId,
+  assignedDepartmentId,
   purpose,
   requestStatus,
   description
 ) {
   const sql = `
     INSERT INTO dbo."DocRequest"(
-    "FromUserId", "Purpose", "DateRequested", "RequestStatus", "Description")
-	VALUES ($1, $2, NOW(), $3, $4)
-    RETURNING "DocRequestId", "FromUserId", "Purpose", "DateRequested", "AssignedUserId", "DateAssigned", "DateProcessStarted", "DateProcessEnd", "DateCompleted", "DateClosed", "DateLastUpdated", "RequestStatus", "Description", "RequestNo", "RejectReason", "CancelReason";
+    "FromUserId", "AssignedDepartmentId", "Purpose", "DateRequested", "RequestStatus", "Description")
+	VALUES ($1, $2, $3, NOW(), $4, $5)
+    RETURNING "DocRequestId", "FromUserId", "Purpose", "DateRequested", "AssignedDepartmentId", "DateAssigned", "DateProcessStarted", "DateProcessEnd", "DateCompleted", "DateClosed", "DateLastUpdated", "RequestStatus", "Description", "RequestNo", "RejectReason", "CancelReason";
   `;
-  const params = [fromUserId, purpose, requestStatus, description]; // Default OTP for now
+  const params = [fromUserId, assignedDepartmentId, purpose, requestStatus, description]; // Default OTP for now
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
 }
@@ -38,7 +39,7 @@ export async function updateDocRequest(
     UPDATE dbo."DocRequest" set 
     "Description" = $2
     WHERE "DocRequestId" = $1
-    RETURNING "DocRequestId", "FromUserId", "Purpose", "DateRequested", "AssignedUserId", "DateAssigned", "DateProcessStarted", "DateProcessEnd", "DateCompleted", "DateClosed", "DateLastUpdated", "RequestStatus", "Description", "RequestNo", "RejectReason", "CancelReason";
+    RETURNING "DocRequestId", "FromUserId", "Purpose", "DateRequested", "AssignedDepartmentId", "DateAssigned", "DateProcessStarted", "DateProcessEnd", "DateCompleted", "DateClosed", "DateLastUpdated", "RequestStatus", "Description", "RequestNo", "RejectReason", "CancelReason";
   `;
   const params = [docRequestId, description]; // Default OTP for now
   const result = await pool.query(sql, params);
@@ -48,7 +49,7 @@ export async function updateDocRequest(
 export async function updateDocRequestStatus(
   docRequestId,
   requestStatus,          // send strings like "APPROVED"
-  assignedUserId,  // can be string "1", we cast to int in SQL
+  assignedDepartmentId,  // can be string "1", we cast to int in SQL
   reason
 ) {
   const sql = `
@@ -57,9 +58,9 @@ export async function updateDocRequestStatus(
       -- Make $2 consistently TEXT; Postgres will cast text -> enum for the column
       "RequestStatus" = $2::text,
 
-      "AssignedUserId" = CASE
+      "AssignedDepartmentId" = CASE
         WHEN $2::text = 'APPROVED' THEN $3::int
-        ELSE d."AssignedUserId"
+        ELSE d."AssignedDepartmentId"
       END,
       "DateAssigned" = CASE
         WHEN $2::text = 'APPROVED' THEN NOW()
@@ -101,11 +102,11 @@ export async function updateDocRequestStatus(
     WHERE d."DocRequestId" = $1
     RETURNING
       d."DocRequestId", d."FromUserId", d."Purpose", d."DateRequested",
-      d."AssignedUserId", d."DateAssigned", d."DateProcessStarted", d."DateProcessEnd",
+      d."AssignedDepartmentId", d."DateAssigned", d."DateProcessStarted", d."DateProcessEnd",
       d."DateCompleted", d."DateClosed", d."DateLastUpdated", d."RequestStatus",
       d."Description", d."RequestNo", d."RejectReason", d."CancelReason";
   `;
-  const params = [docRequestId, requestStatus, assignedUserId, reason];
+  const params = [docRequestId, requestStatus, assignedDepartmentId, reason];
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
 }

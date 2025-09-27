@@ -1,21 +1,31 @@
 |-- .env
 |-- .gitignore
+|-- dataset.csv
 |-- index.js
 |-- LICENSE
+|-- model
+    |-- model-bayes.json
 |-- nodemon.json
 |-- package-lock.json
 |-- package.json
 |-- README.md
+|-- scripts
+    |-- train-bayes.js
 |-- src
+    |-- classifiers
+        |-- localBayes.js
     |-- config
+        |-- cloudinaryConfig.js
         |-- env.js
         |-- swagger.js
     |-- constants
         |-- auth.constant.js
+        |-- department.constant.js
         |-- doc-request.constant.js
         |-- user.constant.js
     |-- controllers
         |-- auth.controller.js
+        |-- department.controller.js
         |-- doc-request.controller.js
         |-- user.controller.js
     |-- db
@@ -25,11 +35,13 @@
         |-- error-handler.js
     |-- routes
         |-- auth.routes.js
+        |-- department.routes.js
         |-- doc-request.routes.js
         |-- index.routes.js
         |-- user.routes.js
     |-- services
         |-- auth.service.js
+        |-- department.service.js
         |-- doc-request.service.js
         |-- email.service.js
         |-- user.service.js

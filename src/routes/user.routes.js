@@ -4,9 +4,10 @@
  *   name: User
  *   description: API for user
  */
-import { Router } from 'express';
-import { asyncHandler } from '../middlewares/async.js';
-import { getUser, create } from '../controllers/user.controller.js';
+import { Router } from "express";
+import { body, validationResult } from "express-validator";
+import { asyncHandler } from "../middlewares/async.js";
+import { getUser, create } from "../controllers/user.controller.js";
 
 const router = Router();
 
@@ -66,7 +67,7 @@ router.get("/:userId", asyncHandler(getUser));
  *               - name
  *               - username
  *               - email
- *               - role
+ *               - departmentId
  *               - password
  *             properties:
  *               name:
@@ -75,7 +76,7 @@ router.get("/:userId", asyncHandler(getUser));
  *                 type: string
  *               email:
  *                 type: string
- *               role:
+ *               departmentId:
  *                 type: string
  *               password:
  *                 type: string
@@ -100,11 +101,32 @@ router.get("/:userId", asyncHandler(getUser));
  *                       type: string
  *                     email:
  *                       type: string
- *                     role:
+ *                     departmentId:
  *                       type: string
  *       401:
  *         description: Invalid data
  */
-router.post('/', asyncHandler(create));
+router.post(
+  "/",
+  [
+    body("departmentId")
+      .exists()
+      .withMessage("departmentId is required")
+      .isString()
+      .withMessage("departmentId must be a string"),
+
+    // final validator
+    (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        const err = new Error(errors.array()[0].msg);
+        err.status = 400;
+        return next(err);
+      }
+      next();
+    },
+  ],
+  asyncHandler(create)
+);
 
 export default router;

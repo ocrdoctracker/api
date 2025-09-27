@@ -23,7 +23,7 @@ export async function getUser(req, res) {
 }
 
 export async function create(req, res) {
-  const { name, username, email, role, password } = req.body;
+  const { name, username, email, departmentId, password } = req.body;
 
   let user;
 
@@ -31,7 +31,7 @@ export async function create(req, res) {
     user = await findActiveUserByEmail(email);
     if(!user) {
       const passwordHash = await hashPassword(password);
-      user = await createUser(name, username, email, role, passwordHash);
+      user = await createUser(name, username, email, departmentId, passwordHash);
     } else {
       return res.status(400).json({ success: false, message: ERROR_USER_EXISTS });
     }

@@ -26,16 +26,3 @@ export async function findActiveUserByUsername(username) {
   if (result.rows.length === 0) return null;
   return camelcaseKeys(result.rows[0]);
 }
-
-export async function getUserAccess(userId) {
-  // Parameterized Postgres query
-  const sql = `
-    SELECT *
-    FROM dbo."UserAccess"
-    WHERE "UserId" = $1
-    LIMIT 1;
-  `;
-  const result = await pool.query(sql, [userId]);
-  if (result.rows.length === 0) return null;
-  return camelcaseKeys(result.rows[0]);
-}

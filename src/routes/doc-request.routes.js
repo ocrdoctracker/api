@@ -12,6 +12,7 @@ import {
   create,
   update,
   updateStatus,
+  upload
 } from "../controllers/doc-request.controller.js";
 
 const router = Router();
@@ -50,7 +51,7 @@ const router = Router();
  *                       type: string
  *                     dateRequested:
  *                       type: string
- *                     assignedUserId:
+ *                     assignedDepartmentId:
  *                       type: string
  *                     dateAssigned:
  *                       type: string
@@ -87,10 +88,13 @@ router.get("/:docRequestId", asyncHandler(getDocRequest));
  *             type: object
  *             required:
  *               - fromUserId
+ *               - assignedDepartmentId
  *               - purpose
  *               - description
  *             properties:
  *               fromUserId:
+ *                 type: string
+ *               assignedDepartmentId:
  *                 type: string
  *               purpose:
  *                 type: string
@@ -117,7 +121,7 @@ router.get("/:docRequestId", asyncHandler(getDocRequest));
  *                       type: string
  *                     dateRequested:
  *                       type: string
- *                     assignedUserId:
+ *                     assignedDepartmentId:
  *                       type: string
  *                     dateAssigned:
  *                       type: string
@@ -187,7 +191,7 @@ router.post("/", asyncHandler(create));
  *                       type: string
  *                     dateRequested:
  *                       type: string
- *                     assignedUserId:
+ *                     assignedDepartmentId:
  *                       type: string
  *                     dateAssigned:
  *                       type: string
@@ -258,7 +262,7 @@ router.put(
  *             properties:
  *               requestStatus:
  *                 type: string
- *               assignedUserId:
+ *               assignedDepartmentId:
  *                 type: string
  *               reason:
  *                 type: string
@@ -283,7 +287,7 @@ router.put(
  *                       type: string
  *                     dateRequested:
  *                       type: string
- *                     assignedUserId:
+ *                     assignedDepartmentId:
  *                       type: string
  *                     dateAssigned:
  *                       type: string
@@ -324,15 +328,15 @@ router.put(
       .isIn(["CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"])
       .withMessage(`requestStatus must be one of: ${["CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].join(", ")}`),
 
-    // assignedUserId is required only when status = APPROVED
-    body("assignedUserId")
+    // assignedDepartmentId is required only when status = APPROVED
+    body("assignedDepartmentId")
       .if(body("requestStatus").equals("APPROVED"))
       .exists()
-      .withMessage("assignedUserId is required when requestStatus = APPROVED")
+      .withMessage("assignedDepartmentId is required when requestStatus = APPROVED")
       .bail()
       .toInt()
       .isInt({ gt: 0 })
-      .withMessage("assignedUserId must be a positive integer"),
+      .withMessage("assignedDepartmentId must be a positive integer"),
 
     // reason is required only when status = CANCELLED or REJECTED
     body("reason")
@@ -359,6 +363,82 @@ router.put(
     },
   ],
   asyncHandler(updateStatus)
+);
+
+/**
+ * @openapi
+ * /api/doc-request/{docRequestId}/upload:
+ *   post:
+ *     tags: [Document Request]
+ *     summary: Upload a file for a Document Request
+ *     description: |
+ *       Accepts a single file (max 10 MB). Returns extracted text (if supported) and file metadata.
+ *     parameters:
+ *       - in: path
+ *         name: docRequestId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The id of the Document Request
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Upload result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     docRequestId:
+ *                       type: string
+ *                     filename:
+ *                       type: string
+ *                     mimeType:
+ *                       type: string
+ *                     size:
+ *                       type: integer
+ *                     extractedText:
+ *                       type: string
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Invalid data
+ */
+
+router.post(
+  "/:docRequestId/upload",
+  [
+    param("docRequestId")
+      .exists().withMessage("docRequestId is required in path")
+      .toInt()
+      .isInt({ gt: 0 }).withMessage("docRequestId must be a positive integer"),
+
+    // final validator
+    (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        const err = new Error(errors.array()[0].msg);
+        err.status = 400;
+        return next(err);
+      }
+      next();
+    },
+  ],
+  asyncHandler(upload)
 );
 
 export default router;

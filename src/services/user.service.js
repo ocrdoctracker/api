@@ -17,34 +17,18 @@ export async function createUser(
   name,
   username,
   email,
-  role,
+  departmentId,
   passwordHash
 ) {
   const sql = `
-    WITH ins_user AS (
-      INSERT INTO dbo."User" ("Name", "Username", "Email", "Password")
-      VALUES ($1, $2, $3, $4)
-      RETURNING "UserId", "Name", "Username", "Email", "Active"
-    ),
-    ins_access AS (
-      INSERT INTO dbo."UserAccess" ("UserId", "Role")
-      SELECT "UserId", $5 FROM ins_user
-      RETURNING "UserId", "Role"
-    )
-    SELECT 
-      u."UserId",
-      u."Name",
-      u."Username",
-      u."Email",
-      a."Role",
-      u."Active"
-    FROM ins_user u
-    JOIN ins_access a USING ("UserId");
+    INSERT INTO dbo."User" ("Name", "Username", "Email", "Password", "DepartmentId")
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING "UserId", "Name", "Username", "Email", "DepartmentId", "Active";
   `;
 
-  // Note the order: passwordHash is $4, role is $5
-  const params = [name, username, email, passwordHash, role.toUpperCase()];
+  // Note the order: passwordHash is $4, departmentId is $5
+  const params = [name, username, email, passwordHash, departmentId.toUpperCase()];
 
   const result = await pool.query(sql, params);
-  return camelcaseKeys(result.rows[0]); // => { userId, name, username, email, role, active }
+  return camelcaseKeys(result.rows[0]); // => { userId, name, username, email, departmentId, active }
 }

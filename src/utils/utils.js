@@ -1,6 +1,32 @@
 import bcrypt from 'bcryptjs';
 import { env } from '../config/env.js';
 import { randomInt } from "crypto";
+import Busboy from "busboy";
+import { createRequire } from "node:module";
+import mammoth from "mammoth";
+const require = createRequire(import.meta.url);
+const pdfParse = require("pdf-parse");
+import path from "node:path";
+
+export async function extractTextFromBuffer(filename, buf) {
+  const lower = String(filename || "").toLowerCase();
+
+  if (lower.endsWith(".pdf")) {
+    const { text } = await pdfParse(buf);
+    return cleanup(text || "");
+  }
+  if (lower.endsWith(".docx")) {
+    const { value } = await mammoth.extractRawText({ buffer: buf });
+    return cleanup(value || "");
+  }
+  if (lower.endsWith(".txt")) {
+    return cleanup(buf.toString("utf8"));
+  }
+  throw new Error("Unsupported file type. Use PDF, DOCX, or TXT.");
+}
+function cleanup(s) {
+  return String(s).replace(/\u0000/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+}
 
 export async function hashPassword(plain) {
   const salt = await bcrypt.genSalt(env.bcryptRounds);
@@ -35,3 +61,45 @@ export const generateOTP = () => {
 export const generateIndentityCode = (id) => {
   return String(id).padStart(6, "0");
 };
+
+
+export const readSingleFileFromMultipart = (req, { maxBytes = 10 * 1024 * 1024 } = {}) => {
+  return new Promise((resolve, reject) => {
+    const bb = Busboy({ headers: req.headers, limits: { files: 1, fileSize: maxBytes } });
+
+    const chunks = [];
+    let filename = "upload.bin";
+    let mimeType = "application/octet-stream";
+    let total = 0;
+
+    bb.on("file", (_name, file, info) => {
+      filename = info?.filename || filename;
+      mimeType = info?.mimeType || info?.mime || mimeType;
+
+      file.on("data", (d) => {
+        total += d.length;
+        chunks.push(d);
+      });
+
+      file.on("limit", () => {
+        reject(new Error("File too large"));
+      });
+    });
+
+    bb.on("finish", () => {
+      if (!total) {
+        return reject(new Error("No file received"));
+      }
+      const buffer = Buffer.concat(chunks);
+      resolve({ filename, mimeType, size: total, buffer });
+    });
+
+    bb.on("error", reject);
+    req.pipe(bb);
+  });
+};
+
+export const sanitizePublicId = (originalName = "") => {
+  const base = path.parse(originalName).name; // drop extension
+  return base.replace(/[^a-zA-Z0-9_\-]/g, "_").slice(0, 120);
+}

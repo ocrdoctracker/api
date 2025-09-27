@@ -4,6 +4,7 @@
   "description": "api",
   "main": "index.js",
   "scripts": {
+    "train": "node scripts/train-bayes.js",
     "dev": "nodemon --exec node index.js",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,18 +15,29 @@
   "type": "module",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "busboy": "^1.6.0",
     "camelcase-keys": "^10.0.0",
+    "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
+    "csv-parse": "^5.6.0",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
+    "mammoth": "^1.11.0",
     "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "natural": "^8.1.0",
     "nodemailer": "^7.0.6",
+    "pdf-parse": "^1.1.1",
     "pg": "^8.16.3",
+    "stopword": "^3.1.5",
+    "stopwords-en": "^0.3.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-dist": "^5.29.0",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "wink-naive-bayes-text-classifier": "^2.2.1",
+    "wink-nlp-utils": "^2.1.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

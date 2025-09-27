@@ -5,6 +5,7 @@
  *   description: API for authentication
  */
 import { Router } from 'express';
+import { body, validationResult } from "express-validator";
 import { asyncHandler } from '../middlewares/async.js';
 import { login} from '../controllers/auth.controller.js';
 
@@ -51,13 +52,11 @@ const router = Router();
  *                       type: string
  *                     email:
  *                       type: string
- *                     role:
- *                       type: string
  *                     notifications:
  *                       type: string
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login', asyncHandler(login));
+router.post('/login',  asyncHandler(login));
 
 export default router;

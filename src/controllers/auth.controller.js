@@ -3,7 +3,8 @@ import {
   ERROR_USER_NOT_FOUND,
   ERROR_PASSWORD_INCORRECT,
 } from '../constants/auth.constant.js';
-import { findActiveUserByUsername, getUserAccess } from '../services/auth.service.js';
+import { findActiveUserByUsername } from '../services/auth.service.js';
+import { getDepartmentById } from '../services/department.service.js';
 
 export async function login(req, res) {
   const { username, password } = req.body;
@@ -18,9 +19,13 @@ export async function login(req, res) {
     return res.status(401).json({ success: false, message: ERROR_PASSWORD_INCORRECT });
   }
 
-  const userAccess = await getUserAccess(user?.userId);
-  if (!userAccess) {
+  if(!user?.departmentId) {
     return res.status(401).json({ success: false, message: "User does not have access!" });
+  }
+
+  user = {
+    ...user,
+    department: getDepartmentById(user?.departmentId)
   }
 
   delete user.password;
