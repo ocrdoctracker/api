@@ -1,4 +1,38 @@
+
 text,label
+"OFFICIAL TRANSCRIPT OF RECORDS: official transcript of records of the student, issued on request by the registrar.",TOR_OFFICIAL
+"This is the official transcript of records of the student, issued on request; contains complete courses and grades.",TOR_OFFICIAL
+"Official transcript of records of the student, issued on request, showing academic history and grading.",TOR_OFFICIAL
+"OFFICIAL TRANSCRIPT OF RECORDS: the student's certified academic record, issued on request by the office of the registrar.",TOR_OFFICIAL
+"Official transcript of records of the student, issued on request; reflects subjects taken and credits earned.",TOR_OFFICIAL
+"This document is the official transcript of records of the student, issued on request for verification purposes.",TOR_OFFICIAL
+"Official transcript of records of the student, issued on request, including cumulative standing and remarks.",TOR_OFFICIAL
+"OFFICIAL TRANSCRIPT OF RECORDS: complete and certified record of coursework for the student, issued on request.",TOR_OFFICIAL
+"Certified official transcript of records of the student, issued on request for academic evaluation.",TOR_OFFICIAL
+"Official transcript of records of the student, issued on request; prepared and authenticated by the registrar.",TOR_OFFICIAL
+
+"CERTIFIED TRUE COPY OF TOR: this is to certify that a certified true copy of transcript records has been issued.",TOR_CERTIFIED_TRUE_COPY
+"Certified true copy of TOR provided upon request for official use.",TOR_CERTIFIED_TRUE_COPY
+"This document serves as a certified true copy of transcript of records for verification.",TOR_CERTIFIED_TRUE_COPY
+"Certified reproduction of TOR authenticated by the registrar.",TOR_CERTIFIED_TRUE_COPY
+"A certified true copy of the official transcript of records is hereby issued.",TOR_CERTIFIED_TRUE_COPY
+"This is a certified true copy of the student’s transcript of records.",TOR_CERTIFIED_TRUE_COPY
+"Certified true copy of TOR prepared for submission to external agencies.",TOR_CERTIFIED_TRUE_COPY
+"This TOR certified true copy is issued for academic validation.",TOR_CERTIFIED_TRUE_COPY
+"Certified true copy of transcript issued for authentication purposes.",TOR_CERTIFIED_TRUE_COPY
+"Certified true copy of transcript of records duly signed and sealed.",TOR_CERTIFIED_TRUE_COPY
+
+"CERTIFICATE OF GRADUATION: this certifies that the student has successfully graduated from the program.",CERT_GRADUATION_COMPLETION
+"Certificate of Graduation issued to confirm completion of degree requirements.",CERT_GRADUATION_COMPLETION
+"This is to certify that the student has completed all requirements and is awarded a certificate of completion.",CERT_GRADUATION_COMPLETION
+"Certificate of Completion acknowledging fulfillment of the academic program.",CERT_GRADUATION_COMPLETION
+"A certificate of graduation confirming eligibility for commencement exercises.",CERT_GRADUATION_COMPLETION
+"This document certifies program completion and graduation.",CERT_GRADUATION_COMPLETION
+"Certificate of Graduation formally recognizing completion of studies.",CERT_GRADUATION_COMPLETION
+"Completion certificate issued to validate fulfillment of curriculum.",CERT_GRADUATION_COMPLETION
+"Certificate of Graduation granted upon verification of requirements.",CERT_GRADUATION_COMPLETION
+"This certification attests to the student’s graduation from the program.",CERT_GRADUATION_COMPLETION
+
 "This is to certify that the student is currently enrolled in the university for the current academic term. Certificate of Enrollment.",CERT_ENROLLMENT
 "This Certificate of Enrollment confirms that the bearer is officially enrolled as a student for the ongoing term.",CERT_ENROLLMENT
 "Certificate of Enrollment: verifies active enrollment status for the present semester as recorded by the registrar.",CERT_ENROLLMENT
@@ -10,16 +44,171 @@ text,label
 "Enrollment certification confirming the student's valid registration for the current semester.",CERT_ENROLLMENT
 "Certificate of Enrollment: attests that the student is enrolled and in good standing for the ongoing term.",CERT_ENROLLMENT
 
-"OFFICIAL TRANSCRIPT OF RECORDS: official transcript of records of the student, issued on request by the registrar.",TRANSCRIPT_OFFICIAL
-"This is the official transcript of records of the student, issued on request; contains complete courses and grades.",TRANSCRIPT_OFFICIAL
-"Official transcript of records of the student, issued on request, showing academic history and grading.",TRANSCRIPT_OFFICIAL
-"OFFICIAL TRANSCRIPT OF RECORDS: the student's certified academic record, issued on request by the office of the registrar.",TRANSCRIPT_OFFICIAL
-"Official transcript of records of the student, issued on request; reflects subjects taken and credits earned.",TRANSCRIPT_OFFICIAL
-"This document is the official transcript of records of the student, issued on request for verification purposes.",TRANSCRIPT_OFFICIAL
-"Official transcript of records of the student, issued on request, including cumulative standing and remarks.",TRANSCRIPT_OFFICIAL
-"OFFICIAL TRANSCRIPT OF RECORDS: complete and certified record of coursework for the student, issued on request.",TRANSCRIPT_OFFICIAL
-"Certified official transcript of records of the student, issued on request for academic evaluation.",TRANSCRIPT_OFFICIAL
-"Official transcript of records of the student, issued on request; prepared and authenticated by the registrar.",TRANSCRIPT_OFFICIAL
+
+"CERTIFICATE OF UNITS EARNED: certifies completion of earned academic units.",CERT_UNITS_EARNED
+"This is a certificate of units earned for coursework completed.",CERT_UNITS_EARNED
+"Certificate of Units Earned issued to confirm completed credit units.",CERT_UNITS_EARNED
+"Document certifying the total number of units earned to date.",CERT_UNITS_EARNED
+"This certificate reflects the units earned by the student.",CERT_UNITS_EARNED
+"Certificate of Units Earned prepared for verification of credits.",CERT_UNITS_EARNED
+"Official certification of earned academic units.",CERT_UNITS_EARNED
+"Units earned are certified through this document.",CERT_UNITS_EARNED
+"Certificate of Units Earned confirms the credit load completed.",CERT_UNITS_EARNED
+"This is a certification of the units earned under the program.",CERT_UNITS_EARNED
+
+"CERTIFICATE OF YEAR LEVEL: certifies that the student is officially classified in the current year level.",CERT_YEAR_LEVEL
+"This is a certificate of year standing confirming academic level.",CERT_YEAR_LEVEL
+"Certificate of Year Level issued to confirm classification within the program.",CERT_YEAR_LEVEL
+"This certification attests to the current year level of the student.",CERT_YEAR_LEVEL
+"Year Level Certificate presented as proof of academic standing.",CERT_YEAR_LEVEL
+"Official certificate of year standing for academic purposes.",CERT_YEAR_LEVEL
+"Certificate of Year Level indicating official classification.",CERT_YEAR_LEVEL
+"This certifies the year level placement in the program.",CERT_YEAR_LEVEL
+"Certificate of standing confirming year level.",CERT_YEAR_LEVEL
+"Document certifying the student’s academic year level.",CERT_YEAR_LEVEL
+
+"CERTIFICATE OF GOOD MORAL CHARACTER: certifies that the student has no derogatory record.",CERT_GOOD_MORAL
+"This is to certify good moral character as verified by the institution.",CERT_GOOD_MORAL
+"Certificate of Good Moral Character issued upon request.",CERT_GOOD_MORAL
+"This certificate attests that the student has exhibited good moral conduct.",CERT_GOOD_MORAL
+"Certification of Good Moral Character prepared by the registrar.",CERT_GOOD_MORAL
+"Official Certificate of Good Moral Character for external use.",CERT_GOOD_MORAL
+"Document certifying that the student is of good moral standing.",CERT_GOOD_MORAL
+"This is a certification of the student’s good moral character.",CERT_GOOD_MORAL
+"Certificate of Good Moral Character suitable for employment or academic purposes.",CERT_GOOD_MORAL
+"Certification attesting to good moral character.",CERT_GOOD_MORAL
+
+"CERTIFICATE OF COURSE DESCRIPTION: provides the description of completed courses.",CERT_COURSE_DESCRIPTION
+"Course syllabus certification outlining course content.",CERT_COURSE_DESCRIPTION
+"This certificate of course description contains details of curriculum content.",CERT_COURSE_DESCRIPTION
+"Certification of syllabus issued for credit evaluation.",CERT_COURSE_DESCRIPTION
+"Document provides course description for reference abroad.",CERT_COURSE_DESCRIPTION
+"Certificate of Course Description prepared by the registrar.",CERT_COURSE_DESCRIPTION
+"Certification describing completed course requirements.",CERT_COURSE_DESCRIPTION
+"Course syllabus certification verifying subject scope.",CERT_COURSE_DESCRIPTION
+"Certificate of Course Description presented for assessment.",CERT_COURSE_DESCRIPTION
+"Document contains course description for equivalency evaluation.",CERT_COURSE_DESCRIPTION
+
+"CERTIFICATION OF GRADING SYSTEM: explains the grading scale used.",CERT_GRADING_SYSTEM
+"Certification of the institution’s grading system issued for evaluation.",CERT_GRADING_SYSTEM
+"This document certifies the official grading system adopted.",CERT_GRADING_SYSTEM
+"Certification of grading policy for academic equivalency.",CERT_GRADING_SYSTEM
+"Official certification describing the grading scale.",CERT_GRADING_SYSTEM
+"Document outlines grading system for recognition abroad.",CERT_GRADING_SYSTEM
+"Certification of grading method used in transcripts.",CERT_GRADING_SYSTEM
+"This certifies the grading standards applied by the institution.",CERT_GRADING_SYSTEM
+"Certification of grading system issued for credentialing.",CERT_GRADING_SYSTEM
+"Document certifying the grading structure for all courses.",CERT_GRADING_SYSTEM
+
+"CERTIFICATION OF MAXIMUM LOAD: certifies maximum academic load allowed per term.",CERT_MAXIMUM_LOAD
+"This certification indicates the maximum load permitted for the student.",CERT_MAXIMUM_LOAD
+"Certificate of Maximum Load issued for verification purposes.",CERT_MAXIMUM_LOAD
+"This document certifies the allowable maximum course load.",CERT_MAXIMUM_LOAD
+"Certification of maximum credit load granted by the college.",CERT_MAXIMUM_LOAD
+"Certificate of Maximum Load for academic purposes.",CERT_MAXIMUM_LOAD
+"This certifies the maximum load in accordance with policy.",CERT_MAXIMUM_LOAD
+"Certification of allowed maximum units in one semester.",CERT_MAXIMUM_LOAD
+"Document showing maximum credit load authorized.",CERT_MAXIMUM_LOAD
+"Certificate of Maximum Load prepared by the registrar.",CERT_MAXIMUM_LOAD
+
+"Certificate of Academic Standing: certifies overall academic standing and honors or rank as applicable.",CERT_ACAD_STANDING
+"This certification summarizes academic standing and any honors or rank attained.",CERT_ACAD_STANDING
+"Official certification of academic standing for reference and evaluation.",CERT_ACAD_STANDING
+"Certification indicates academic standing and relative rank within the program.",CERT_ACAD_STANDING
+"Document certifying academic standing with notation of honors or rank.",CERT_ACAD_STANDING
+"Academic standing certificate issued for scholarship or employment requirements.",CERT_ACAD_STANDING
+"Certification of academic standing reflecting performance and rank.",CERT_ACAD_STANDING
+"Certificate of Academic Standing presented for academic and professional purposes.",CERT_ACAD_STANDING
+"This document confirms academic standing as recorded by the institution.",CERT_ACAD_STANDING
+"Certification of academic standing and honors for official use.",CERT_ACAD_STANDING
+
+"Certification of No Pending Disciplinary Case: attests to the absence of unresolved disciplinary matters.",CERT_NO_DISCIPLINARY_CASE
+"This is to certify that there is no pending disciplinary case on record.",CERT_NO_DISCIPLINARY_CASE
+"Certification confirms no active disciplinary proceedings are recorded.",CERT_NO_DISCIPLINARY_CASE
+"Document certifying absence of pending disciplinary case for the requester.",CERT_NO_DISCIPLINARY_CASE
+"Official certification of no pending disciplinary action.",CERT_NO_DISCIPLINARY_CASE
+"Certification states that no unresolved disciplinary case exists.",CERT_NO_DISCIPLINARY_CASE
+"This certificate verifies a clean disciplinary record at the time of issuance.",CERT_NO_DISCIPLINARY_CASE
+"Certification of no pending disciplinary case for clearance purposes.",CERT_NO_DISCIPLINARY_CASE
+"Document indicates no active disciplinary cases on file.",CERT_NO_DISCIPLINARY_CASE
+"Certification confirms the requester has no pending disciplinary case.",CERT_NO_DISCIPLINARY_CASE
+
+"Honorable Dismissal / Transfer Credentials: certification permitting transfer to another institution.",HONORABLE_DISMISSAL
+"This document constitutes honorable dismissal and release of transfer credentials.",HONORABLE_DISMISSAL
+"Certification authorizes transfer and indicates good standing upon separation.",HONORABLE_DISMISSAL
+"Honorable dismissal issued together with permit to transfer.",HONORABLE_DISMISSAL
+"Document serves as permit to transfer including necessary credentials.",HONORABLE_DISMISSAL
+"Transfer credentials provided through honorable dismissal certification.",HONORABLE_DISMISSAL
+"Certification of honorable dismissal for admission to another institution.",HONORABLE_DISMISSAL
+"Permit to transfer and honorable dismissal prepared by the records office.",HONORABLE_DISMISSAL
+"Honorable dismissal confirms separation in good standing.",HONORABLE_DISMISSAL
+"Official transfer credentials released via honorable dismissal.",HONORABLE_DISMISSAL
+
+"Letter of No Objection: states that the office has no objection to the specified request or action.",LETTER_NO_OBJECTION
+"This letter indicates no objection to proceed with the stated purpose.",LETTER_NO_OBJECTION
+"Formal no-objection letter issued for compliance or application needs.",LETTER_NO_OBJECTION
+"Document certifies no objection from the issuing office.",LETTER_NO_OBJECTION
+"Letter of No Objection provided upon evaluation of the request.",LETTER_NO_OBJECTION
+"This is a no-objection certification for the described undertaking.",LETTER_NO_OBJECTION
+"Letter confirms there is no objection to the proposed activity.",LETTER_NO_OBJECTION
+"No-objection letter issued for submission to concerned entities.",LETTER_NO_OBJECTION
+"Document serves as a letter of no objection for official purposes.",LETTER_NO_OBJECTION
+"Certification that the office raises no objection to the request.",LETTER_NO_OBJECTION
+
+"Leave of Absence: request to take leave from academic enrollment subject to approval.",LEAVE_OF_ABSENCE
+"Application for leave of absence from studies for the specified period.",LEAVE_OF_ABSENCE
+"Document seeks approval for academic leave and readmission terms.",LEAVE_OF_ABSENCE
+"Request for leave of absence submitted for administrative action.",LEAVE_OF_ABSENCE
+"Leave of absence form indicating suspension of enrollment for a time.",LEAVE_OF_ABSENCE
+"Application to take an approved leave from academic activities.",LEAVE_OF_ABSENCE
+"Requesting academic leave subject to compliance with policies.",LEAVE_OF_ABSENCE
+"Leave of absence filing for temporary withdrawal from coursework.",LEAVE_OF_ABSENCE
+"Petition for leave of absence and subsequent readmission conditions.",LEAVE_OF_ABSENCE
+"Form covers leave of absence parameters and responsibilities.",LEAVE_OF_ABSENCE
+
+"Permission for Examination / Dropping of Course: request to take an examination or drop a subject.",PERMISSION_EXAM_DROPPING
+"Application for permission to sit for an examination.",PERMISSION_EXAM_DROPPING
+"Request to drop a course in accordance with academic rules.",PERMISSION_EXAM_DROPPING
+"Document seeks approval for special examination or course dropping.",PERMISSION_EXAM_DROPPING
+"Form for permission to take exam or withdraw from a subject.",PERMISSION_EXAM_DROPPING
+"Requesting authorization for examination or dropping of course.",PERMISSION_EXAM_DROPPING
+"Petition to drop a course with proper endorsements.",PERMISSION_EXAM_DROPPING
+"Permission slip for examination participation or subject dropping.",PERMISSION_EXAM_DROPPING
+"Application indicates reason for exam permission or course withdrawal.",PERMISSION_EXAM_DROPPING
+"Approval form for examination access or course drop processing.",PERMISSION_EXAM_DROPPING
+
+"Completion of Grade: request to complete an incomplete grade through approved work.",COMPLETION_OF_GRADE
+"Form for completion of grade indicating remaining requirements.",COMPLETION_OF_GRADE
+"Request to complete course grade under supervision and policy.",COMPLETION_OF_GRADE
+"Completion of grade document specifying tasks for final mark.",COMPLETION_OF_GRADE
+"Application enables conversion of incomplete to final grade.",COMPLETION_OF_GRADE
+"Requesting completion of grade upon submission of required outputs.",COMPLETION_OF_GRADE
+"Completion of grade processing with instructor endorsement.",COMPLETION_OF_GRADE
+"Document records fulfillment of pending course requirements.",COMPLETION_OF_GRADE
+"Form indicates activities needed for grade completion.",COMPLETION_OF_GRADE
+"Completion of grade request for final evaluation.",COMPLETION_OF_GRADE
+
+"Removal of Grade: application to remove a conditional or failing mark by examination or work.",REMOVAL_OF_GRADE
+"Request for grade removal through an approved removal process.",REMOVAL_OF_GRADE
+"Document initiates removal of grade subject to guidelines.",REMOVAL_OF_GRADE
+"Removal of grade form authorizing remedial assessment.",REMOVAL_OF_GRADE
+"Application to remove a previously recorded grade condition.",REMOVAL_OF_GRADE
+"Process request to remove grade upon successful requirements.",REMOVAL_OF_GRADE
+"Form indicates removal examination or equivalent activity.",REMOVAL_OF_GRADE
+"Grade removal application endorsed by the instructor.",REMOVAL_OF_GRADE
+"Document covers steps for removing conditional grade.",REMOVAL_OF_GRADE
+"Requesting approval for grade removal procedure.",REMOVAL_OF_GRADE
+
+"Substitution / Validation of Subjects: request to substitute or validate coursework for equivalency.",SUBJECT_SUBSTITUTION_VALIDATION
+"Application seeks subject substitution due to curriculum alignment.",SUBJECT_SUBSTITUTION_VALIDATION
+"Request for validation of subjects previously completed.",SUBJECT_SUBSTITUTION_VALIDATION
+"Form proposes substitution or validation to meet program requirements.",SUBJECT_SUBSTITUTION_VALIDATION
+"Subject validation for equivalency and credit recognition.",SUBJECT_SUBSTITUTION_VALIDATION
+"Application to substitute a course with an equivalent subject.",SUBJECT_SUBSTITUTION_VALIDATION
+"Request validates prior coursework for program compliance.",SUBJECT_SUBSTITUTION_VALIDATION
+"Subject substitution/validation endorsed by the academic unit.",SUBJECT_SUBSTITUTION_VALIDATION
+"Document supports equivalency through subject validation.",SUBJECT_SUBSTITUTION_VALIDATION
+"Petition for substitution or validation of curriculum components.",SUBJECT_SUBSTITUTION_VALIDATION
 
 "APPLICATION FOR GRADUATION: application for graduation for the current term; candidate seeks evaluation of requirements.",APPLICATION_GRADUATION_CANDIDACY
 "Application for graduation for the ongoing term; candidate requests clearance and confirmation of eligibility.",APPLICATION_GRADUATION_CANDIDACY
@@ -32,27 +221,49 @@ text,label
 "Application for graduation for the present term with acknowledgment of remaining clearances.",APPLICATION_GRADUATION_CANDIDACY
 "APPLICATION FOR GRADUATION: formal candidacy request for the ongoing term, for registrar assessment.",APPLICATION_GRADUATION_CANDIDACY
 
-"CERTIFICATE OF CONTRACT: certifies that the holder has an active contract with the institution under approved terms.",CERT_CONTRACT
-"This Certificate of Contract confirms the existence of a valid engagement between the holder and the college unit.",CERT_CONTRACT
-"Certificate of Contract issued to attest to an active service agreement for instructional duties.",CERT_CONTRACT
-"This document certifies a contract period of engagement with specified responsibilities within the unit.",CERT_CONTRACT
-"CERTIFICATE OF CONTRACT: acknowledges an approved contract in force under institutional policies.",CERT_CONTRACT
-"Certification of Contract confirming active appointment subject to standard conditions.",CERT_CONTRACT
-"This is a Certificate of Contract verifying the holder’s ongoing contractual assignment.",CERT_CONTRACT
-"Certificate of Contract indicating effective engagement and scope of appointment with the department.",CERT_CONTRACT
-"This certifies the existence of a contract between the holder and the institution for the current cycle.",CERT_CONTRACT
-"CERTIFICATE OF CONTRACT: confirmation of a valid and active contractual relationship.",CERT_CONTRACT
+"Deans’ Form: academic form requiring dean’s endorsement for various purposes.",DEANS_FORM
+"Submission of dean’s form for approval related to academic matters.",DEANS_FORM
+"Deans’ form used for petitions, permissions, or certifications.",DEANS_FORM
+"Document requires the dean’s signature to proceed.",DEANS_FORM
+"Dean’s form covering special academic requests.",DEANS_FORM
+"Form routed to the dean for action and endorsement.",DEANS_FORM
+"Deans’ form utilized for clearance or exception processing.",DEANS_FORM
+"Official dean’s form attached to the request.",DEANS_FORM
+"Dean’s form submitted as part of requirements.",DEANS_FORM
+"Endorsed deans’ form for administrative processing.",DEANS_FORM
 
-"REQUEST FOR TRUE COPY OF GRADES: requesting a true copy of grades for all completed subjects, duly certified.",REQUEST_TRUE_COPY_GRADES
-"Formal request for a true copy of grades for evaluation and verification by relevant offices.",REQUEST_TRUE_COPY_GRADES
-"Kindly issue a true copy of grades, certified by the registrar, for credential review.",REQUEST_TRUE_COPY_GRADES
-"REQUEST FOR TRUE COPY OF GRADES: seeking certified reproduction of term grades for official purposes.",REQUEST_TRUE_COPY_GRADES
-"Please provide a true copy of grades, authenticated, for scholarship or employment documentation.",REQUEST_TRUE_COPY_GRADES
-"Requesting certified true copy of grades covering completed coursework for verification.",REQUEST_TRUE_COPY_GRADES
-"REQUEST FOR TRUE COPY OF GRADES: issuance of certified grades for submission to external agencies.",REQUEST_TRUE_COPY_GRADES
-"Petition for a true copy of grades, certified accurate and complete by the records office.",REQUEST_TRUE_COPY_GRADES
-"Request for true copy of grades to support application and credential assessment requirements.",REQUEST_TRUE_COPY_GRADES
-"REQUEST FOR TRUE COPY OF GRADES: please release certified grade records for official use.",REQUEST_TRUE_COPY_GRADES
+"University / College Clearance: certification that institutional accounts and obligations are settled.",UNIVERSITY_CLEARANCE
+"This clearance certifies that there are no outstanding obligations.",UNIVERSITY_CLEARANCE
+"Clearance document confirms settlement of academic and administrative requirements.",UNIVERSITY_CLEARANCE
+"Official clearance issued for completion of institutional processes.",UNIVERSITY_CLEARANCE
+"University clearance required for release of records.",UNIVERSITY_CLEARANCE
+"Certification of clearance for graduation or transfer.",UNIVERSITY_CLEARANCE
+"Clearance indicates all accounts and responsibilities are cleared.",UNIVERSITY_CLEARANCE
+"Document serves as college clearance for official purposes.",UNIVERSITY_CLEARANCE
+"Clearance certification provided by the institution.",UNIVERSITY_CLEARANCE
+"Institutional clearance confirming no pending obligations.",UNIVERSITY_CLEARANCE
+
+"CERTIFICATION / VERIFICATION FOR FOREIGN CREDENTIALS: verifies academic completion for recognition abroad.",CERT_VERIFY_FOREIGN_CREDENTIALS
+"This certification/verification for foreign credentials confirms degree completion for international evaluation.",CERT_VERIFY_FOREIGN_CREDENTIALS
+"Verification for foreign credentials issued to support recognition by institutions outside the country.",CERT_VERIFY_FOREIGN_CREDENTIALS
+"CERTIFICATION / VERIFICATION FOR FOREIGN CREDENTIALS: confirms authenticity of academic records for overseas use.",CERT_VERIFY_FOREIGN_CREDENTIALS
+"This document serves as certification and verification for foreign credential assessment bodies.",CERT_VERIFY_FOREIGN_CREDENTIALS
+"Verification for foreign credentials: attests to academic standing and completion for external agencies.",CERT_VERIFY_FOREIGN_CREDENTIALS
+"CERTIFICATION / VERIFICATION FOR FOREIGN CREDENTIALS: prepared for submission to international authorities.",CERT_VERIFY_FOREIGN_CREDENTIALS
+"Certification for foreign credentials verifying program completion and academic validity.",CERT_VERIFY_FOREIGN_CREDENTIALS
+"Official verification for foreign credentials intended for recognition by outside institutions.",CERT_VERIFY_FOREIGN_CREDENTIALS
+"CERTIFICATION / VERIFICATION FOR FOREIGN CREDENTIALS: provides authenticated confirmation suitable for use abroad.",CERT_VERIFY_FOREIGN_CREDENTIALS
+
+"English translation of diploma / documents: provides official English rendition of records.",CERT_ENGLISH_TRANSLATION
+"Certified English translation of academic documents for external use.",CERT_ENGLISH_TRANSLATION
+"Document contains English translation of diploma and related records.",CERT_ENGLISH_TRANSLATION
+"Official English translation prepared for evaluation purposes.",CERT_ENGLISH_TRANSLATION
+"Translation certificate rendering academic records in English.",CERT_ENGLISH_TRANSLATION
+"English translation issued for recognition by external bodies.",CERT_ENGLISH_TRANSLATION
+"Certified translation of documents into English for verification.",CERT_ENGLISH_TRANSLATION
+"Document provides English version of academic credentials.",CERT_ENGLISH_TRANSLATION
+"Official translation certificate for diploma and attachments.",CERT_ENGLISH_TRANSLATION
+"English translation prepared and certified by the office.",CERT_ENGLISH_TRANSLATION
 
 "CERTIFIED ACTUAL TEXT OF DIPLOMA: this document reproduces the exact wording appearing on the original diploma.",CERTIFIED_ACTUAL_TEXT_DIPLOMA
 "This is the certified actual text of diploma, reflecting the precise language as conferred.",CERTIFIED_ACTUAL_TEXT_DIPLOMA
@@ -65,13 +276,75 @@ text,label
 "The certified actual text of diploma appears herein exactly as originally issued.",CERTIFIED_ACTUAL_TEXT_DIPLOMA
 "Certified Actual Text of Diploma: exact wording provided for verification and archival.",CERTIFIED_ACTUAL_TEXT_DIPLOMA
 
-"CERTIFICATION / VERIFICATION FOR FOREIGN CREDENTIALS: verifies academic completion for recognition abroad.",CERT_VERIFY_FOREIGN_CREDENTIALS
-"This certification/verification for foreign credentials confirms degree completion for international evaluation.",CERT_VERIFY_FOREIGN_CREDENTIALS
-"Verification for foreign credentials issued to support recognition by institutions outside the country.",CERT_VERIFY_FOREIGN_CREDENTIALS
-"CERTIFICATION / VERIFICATION FOR FOREIGN CREDENTIALS: confirms authenticity of academic records for overseas use.",CERT_VERIFY_FOREIGN_CREDENTIALS
-"This document serves as certification and verification for foreign credential assessment bodies.",CERT_VERIFY_FOREIGN_CREDENTIALS
-"Verification for foreign credentials: attests to academic standing and completion for external agencies.",CERT_VERIFY_FOREIGN_CREDENTIALS
-"CERTIFICATION / VERIFICATION FOR FOREIGN CREDENTIALS: prepared for submission to international authorities.",CERT_VERIFY_FOREIGN_CREDENTIALS
-"Certification for foreign credentials verifying program completion and academic validity.",CERT_VERIFY_FOREIGN_CREDENTIALS
-"Official verification for foreign credentials intended for recognition by outside institutions.",CERT_VERIFY_FOREIGN_CREDENTIALS
-"CERTIFICATION / VERIFICATION FOR FOREIGN CREDENTIALS: provides authenticated confirmation suitable for use abroad.",CERT_VERIFY_FOREIGN_CREDENTIALS
+"Certificate of GWA: certifies the general weighted average recorded for the student.",CERT_GWA
+"This certification states the computed general weighted average.",CERT_GWA
+"Certificate of GWA issued for scholarship or employment requirements.",CERT_GWA
+"Document certifies the officially recorded general weighted average.",CERT_GWA
+"GWA certification prepared for evaluation and verification.",CERT_GWA
+"Official certification of GWA as reflected in records.",CERT_GWA
+"Certificate indicates the general weighted average for reference.",CERT_GWA
+"Certification of GWA for submission to external agencies.",CERT_GWA
+"Document provides the general weighted average upon request.",CERT_GWA
+"Certified GWA issued by the records office.",CERT_GWA
+
+"CERTIFICATE OF CONTRACT: certifies that the holder has an active contract with the institution under approved terms.",CERT_CONTRACT
+"This Certificate of Contract confirms the existence of a valid engagement between the holder and the college unit.",CERT_CONTRACT
+"Certificate of Contract issued to attest to an active service agreement for instructional duties.",CERT_CONTRACT
+"This document certifies a contract period of engagement with specified responsibilities within the unit.",CERT_CONTRACT
+"CERTIFICATE OF CONTRACT: acknowledges an approved contract in force under institutional policies.",CERT_CONTRACT
+"Certification of Contract confirming active appointment subject to standard conditions.",CERT_CONTRACT
+"This is a Certificate of Contract verifying the holder’s ongoing contractual assignment.",CERT_CONTRACT
+"Certificate of Contract indicating effective engagement and scope of appointment with the department.",CERT_CONTRACT
+"This certifies the existence of a contract between the holder and the institution for the current cycle.",CERT_CONTRACT
+"CERTIFICATE OF CONTRACT: confirmation of a valid and active contractual relationship.",CERT_CONTRACT
+
+"Certification of Ranking: certifies rank among graduates or cohort as applicable.",CERT_RANKING
+"This certification states the graduate’s ranking as recorded.",CERT_RANKING
+"Certificate of Ranking issued for recognition and documentation.",CERT_RANKING
+"Document certifies ranking for official reference.",CERT_RANKING
+"Official certification of rank within the graduating group.",CERT_RANKING
+"Certification indicates ranking based on institutional records.",CERT_RANKING
+"Certificate of ranking prepared for verification purposes.",CERT_RANKING
+"Document provides ranking information for external submission.",CERT_RANKING
+"Certification of rank granted upon request.",CERT_RANKING
+"Rank certification issued by the appropriate office.",CERT_RANKING
+
+"Certification of Related Learning Experience: certifies completion of related learning activities.",CERT_RELATED_LEARNING_EXP
+"This document certifies related learning experience required by the program.",CERT_RELATED_LEARNING_EXP
+"Certification of RLE issued for credential evaluation.",CERT_RELATED_LEARNING_EXP
+"Certificate confirms completion of required related learning experience.",CERT_RELATED_LEARNING_EXP
+"Official certification of RLE hours or activities completed.",CERT_RELATED_LEARNING_EXP
+"Document serves as proof of related learning experience.",CERT_RELATED_LEARNING_EXP
+"Certification of related learning exposure for verification.",CERT_RELATED_LEARNING_EXP
+"Certificate records participation in related learning components.",CERT_RELATED_LEARNING_EXP
+"RLE certification prepared for professional or academic purposes.",CERT_RELATED_LEARNING_EXP
+"Certification acknowledges completion of program-related learning experience.",CERT_RELATED_LEARNING_EXP
+
+"Certification / Authentication & Verification (CAV): document prepared for authentication or apostille.",CERT_CAV
+"This certification is issued for authentication and verification (CAV).",CERT_CAV
+"Document prepared for CAV / apostille processing.",CERT_CAV
+"Certification supports authentication of academic records.",CERT_CAV
+"Official CAV document for recognition by external authorities.",CERT_CAV
+"CAV certification confirms authenticity of credentials.",CERT_CAV
+"Document indicates completion of authentication and verification steps.",CERT_CAV
+"Certification for CAV to facilitate external validation.",CERT_CAV
+"Records prepared for certification, authentication, and verification.",CERT_CAV
+"CAV certification released for submission to agencies.",CERT_CAV
+
+"REQUEST FOR TRUE COPY OF GRADES: requesting a true copy of grades for all completed subjects, duly certified.",REQUEST_TRUE_COPY_GRADES
+"Formal request for a true copy of grades for evaluation and verification by relevant offices.",REQUEST_TRUE_COPY_GRADES
+"Kindly issue a true copy of grades, certified by the registrar, for credential review.",REQUEST_TRUE_COPY_GRADES
+"REQUEST FOR TRUE COPY OF GRADES: seeking certified reproduction of term grades for official purposes.",REQUEST_TRUE_COPY_GRADES
+"Please provide a true copy of grades, authenticated, for scholarship or employment documentation.",REQUEST_TRUE_COPY_GRADES
+"Requesting certified true copy of grades covering completed coursework for verification.",REQUEST_TRUE_COPY_GRADES
+"REQUEST FOR TRUE COPY OF GRADES: issuance of certified grades for submission to external agencies.",REQUEST_TRUE_COPY_GRADES
+"Petition for a true copy of grades, certified accurate and complete by the records office.",REQUEST_TRUE_COPY_GRADES
+"Request for true copy of grades to support application and credential assessment requirements.",REQUEST_TRUE_COPY_GRADES
+"REQUEST FOR TRUE COPY OF GRADES: please release certified grade records for official use.",REQUEST_TRUE_COPY_GRADES
+
+
+
+
+
+
+

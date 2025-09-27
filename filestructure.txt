@@ -4,6 +4,7 @@
     |-- project.json
     |-- README.txt
 |-- dataset.csv
+|-- db.sql
 |-- index.js
 |-- LICENSE
 |-- model
