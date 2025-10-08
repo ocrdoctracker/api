@@ -33,6 +33,7 @@
         |-- auth.controller.js
         |-- common.controller.js
         |-- department.controller.js
+        |-- doc-classification.controller.js
         |-- doc-request.controller.js
         |-- user.controller.js
     |-- db
@@ -44,6 +45,7 @@
         |-- auth.routes.js
         |-- common.routes.js
         |-- department.routes.js
+        |-- doc-classification.routes.js
         |-- doc-request.routes.js
         |-- index.routes.js
         |-- user.routes.js

@@ -526,8 +526,6 @@ router.put(
  *             properties:
  *               requestStatus:
  *                 type: string
- *               assignedDepartmentId:
- *                 type: string
  *               reason:
  *                 type: string
  *     responses:
@@ -591,16 +589,6 @@ router.put(
       .withMessage("requestStatus must be a string")
       .isIn(["CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"])
       .withMessage(`requestStatus must be one of: ${["CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].join(", ")}`),
-
-    // assignedDepartmentId is required only when status = APPROVED
-    body("assignedDepartmentId")
-      .if(body("requestStatus").equals("APPROVED"))
-      .exists()
-      .withMessage("assignedDepartmentId is required when requestStatus = APPROVED")
-      .bail()
-      .toInt()
-      .isInt({ gt: 0 })
-      .withMessage("assignedDepartmentId must be a positive integer"),
 
     // reason is required only when status = CANCELLED or REJECTED
     body("reason")

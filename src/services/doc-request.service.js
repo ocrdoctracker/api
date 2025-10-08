@@ -8,7 +8,6 @@ export async function getDocRequestById(docRequestId) {
     dc."FromUserId", 
     dc."Purpose", 
     dc."DateRequested", 
-    dc."DateAssigned", 
     dc."DateProcessStarted", 
     dc."DateProcessEnd", 
     dc."DateCompleted", 
@@ -62,7 +61,6 @@ export async function getDocRequestAssignedToUser(fromUserId, requestStatus, pag
     dc."FromUserId", 
     dc."Purpose", 
     dc."DateRequested", 
-    dc."DateAssigned", 
     dc."DateProcessStarted", 
     dc."DateProcessEnd", 
     dc."DateCompleted", 
@@ -127,7 +125,6 @@ export async function getDocRequestFromUser(fromUserId, requestStatus, pageSize 
     dc."FromUserId", 
     dc."Purpose", 
     dc."DateRequested", 
-    dc."DateAssigned", 
     dc."DateProcessStarted", 
     dc."DateProcessEnd", 
     dc."DateCompleted", 
@@ -218,7 +215,6 @@ export async function updateDocRequest(
 export async function updateDocRequestStatus(
   docRequestId,
   requestStatus,          // send strings like "APPROVED"
-  assignedDepartmentId,  // can be string "1", we cast to int in SQL
   reason
 ) {
   const sql = `
@@ -226,15 +222,6 @@ export async function updateDocRequestStatus(
     SET
       -- Make $2 consistently TEXT; Postgres will cast text -> enum for the column
       "RequestStatus" = $2::text,
-
-      "AssignedDepartmentId" = CASE
-        WHEN $2::text = 'APPROVED' THEN $3::int
-        ELSE d."AssignedDepartmentId"
-      END,
-      "DateAssigned" = CASE
-        WHEN $2::text = 'APPROVED' THEN NOW()
-        ELSE d."DateAssigned"
-      END,
 
       "DateProcessStarted" = CASE
         WHEN $2::text = 'PROCESSING' THEN NOW()
@@ -256,13 +243,13 @@ export async function updateDocRequestStatus(
       END,
 
       "RejectReason" = CASE
-        WHEN $2::text = 'REJECTED' THEN $4
+        WHEN $2::text = 'REJECTED' THEN $3
         WHEN $2::text IN ('APPROVED','PROCESSING','COMPLETED','CLOSED','CANCELLED') THEN NULL
         ELSE d."RejectReason"
       END,
 
       "CancelReason" = CASE
-        WHEN $2::text = 'CANCELLED' THEN $4
+        WHEN $2::text = 'CANCELLED' THEN $3
         WHEN $2::text IN ('APPROVED','PROCESSING','COMPLETED','CLOSED','REJECTED') THEN NULL
         ELSE d."CancelReason"
       END,
@@ -271,11 +258,11 @@ export async function updateDocRequestStatus(
     WHERE d."DocRequestId" = $1
     RETURNING
       d."DocRequestId", d."FromUserId", d."Purpose", d."DateRequested",
-      d."AssignedDepartmentId", d."DateAssigned", d."DateProcessStarted", d."DateProcessEnd",
+      d."AssignedDepartmentId", d."DateProcessStarted", d."DateProcessEnd",
       d."DateCompleted", d."DateClosed", d."DateLastUpdated", d."RequestStatus",
       d."Description", d."RequestNo", d."RejectReason", d."CancelReason";
   `;
-  const params = [docRequestId, requestStatus, assignedDepartmentId, reason];
+  const params = [docRequestId, requestStatus, reason];
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
 }

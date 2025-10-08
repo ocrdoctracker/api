@@ -60,38 +60,72 @@ export async function getDocRequest(req, res) {
 
 export async function getDocRequestAssigned(req, res) {
   const { userId, requestStatus, pageSize, pageIndex } = req.query;
-  const user = await getUserById(userId);
-  if (!user) {
+  let docRequest;
+  if (!userId) {
     return res
       .status(400)
-      .json({ success: false, message: ERROR_USER_NOT_FOUND });
+      .json({ success: false, message: "Missing userId params" });
   }
-  let docRequest = await getDocRequestAssignedToUser(userId, requestStatus.split(","), pageSize, pageIndex);
-  docRequest.results.map(x=> {
-    x.purpose = documentTypesobj[x.purpose];
-    return x;
-  });
+  try {
+    const user = await getUserById(userId);
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: ERROR_USER_NOT_FOUND });
+    }
+    docRequest = await getDocRequestAssignedToUser(userId, requestStatus.split(","), pageSize, pageIndex);
+    docRequest.results.map(x=> {
+      x.purpose = documentTypesobj[x.purpose];
+      return x;
+    });
+  } catch (ex) {
+    return res
+      .status(400)
+      .json({ success: false, message: e?.message });
+  }
   return res.json({ success: true, data: docRequest });
 }
 
 export async function getDocRequestList(req, res) {
   const { fromUserId, requestStatus, pageSize, pageIndex } = req.query;
-  const user = await getUserById(fromUserId);
-  if (!user) {
+  if (!fromUserId) {
     return res
       .status(400)
-      .json({ success: false, message: ERROR_USER_NOT_FOUND });
+      .json({ success: false, message: "Missing fromUserId params" });
   }
-  let docRequest = await getDocRequestFromUser(fromUserId, requestStatus.split(","), pageSize, pageIndex);
-  docRequest.results.map(x=> {
-    x.purpose = documentTypesobj[x.purpose];
-    return x;
-  });
+  let docRequest;
+  try {
+    const user = await getUserById(fromUserId);
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: ERROR_USER_NOT_FOUND });
+    }
+    docRequest = await getDocRequestFromUser(fromUserId, requestStatus.split(","), pageSize, pageIndex);
+    docRequest.results.map(x=> {
+      x.purpose = documentTypesobj[x.purpose];
+      return x;
+    });
+  } catch (ex) {
+    return res
+      .status(400)
+      .json({ success: false, message: e?.message });
+  }
   return res.json({ success: true, data: docRequest });
 }
 
 export async function create(req, res) {
   const { fromUserId, assignedDepartmentId, purpose, description } = req.body;
+  if (!fromUserId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing fromUserId params" });
+  }
+  if (!assignedDepartmentId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing assignedDepartmentId params" });
+  }
   let docRequest;
   try {
     const user = await getUserById(fromUserId);
@@ -146,20 +180,11 @@ export async function updateStatus(req, res) {
       .status(400)
       .json({ success: false, message: "Missing docRequestId params" });
   }
-  const { requestStatus, assignedDepartmentId, reason } = req.body;
+  const { requestStatus, reason } = req.body;
 
-  let docRequest, assignedUser;
+  let docRequest;
 
   try {
-    if (requestStatus === DOCREQUEST_STATUS.APPROVED) {
-      assignedUser = await getUserById(assignedDepartmentId);
-      if (!assignedUser) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Assigned user not found" });
-      }
-    }
-
     docRequest = await getDocRequestById(docRequestId);
     if (!docRequest) {
       return res
@@ -231,10 +256,22 @@ export async function updateStatus(req, res) {
           message: "Document Request was not yet Completed",
         });
       }
+
+      if (
+        !docRequest?.documentFile?.publicId &&
+        (
+          requestStatus === DOCREQUEST_STATUS.CLOSED ||
+          requestStatus === DOCREQUEST_STATUS.COMPLETED)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Document Request document file is required",
+        });
+      }
+
       docRequest = await updateDocRequestStatus(
         docRequestId,
         requestStatus,
-        assignedDepartmentId || 0,
         reason || ""
       );
     }

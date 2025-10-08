@@ -1,6 +1,6 @@
 [
   {
-    "TOR_OFFICIAL": "Transcript of Records / Official Transcript"
+    "TOR_OFFICIAL": "Transcript of Records (TOR) / Official Transcript"
   },
   {
     "TOR_CERTIFIED_TRUE_COPY": "Certified True Copies of TOR or parts thereof"
@@ -69,9 +69,6 @@
     "CERT_VERIFY_FOREIGN_CREDENTIALS": "Certification / Verification for Foreign Credentials (e.g. for foreign board exams)"
   },
   {
-    "CERT_ENGLISH_TRANSLATION": "English translation of diploma / documents"
-  },
-  {
     "CERTIFIED_ACTUAL_TEXT_DIPLOMA": "Certified Actual Text of Diploma"
   },
   {
@@ -94,5 +91,86 @@
   },
   {
     "OTHERS": "Others"
+  },
+  {
+    "FINAL_TEACHING_ASSIGNMENT": "Final Teaching Assignment"
+  },
+  {
+    "FACULTY_APPOINTMENT": "Faculty Appointment Paper"
+  },
+  {
+    "FACULTY_TEACHING_ASSIGNMENT": "Faculty Teaching Assignment"
+  },
+  {
+    "FACULTY_SCHEDULE_CERT": "Faculty Class Schedule Certification"
+  },
+  {
+    "FACULTY_SUBSTITUTION": "Faculty Substitution Approval"
+  },
+  {
+    "FACULTY_EVAL_REPORT": "Faculty Evaluation Report"
+  },
+  {
+    "FACULTY_RESEARCH_CERT": "Faculty Research Engagement Certification"
+  },
+  {
+    "FACULTY_EXTENSION_CERT": "Faculty Extension Service Certification"
+  },
+  {
+    "FACULTY_TRAINING_CERT": "Faculty Training Certificate"
+  },
+  {
+    "FACULTY_TRAVEL_ORDER": "Faculty Travel Order"
+  },
+  {
+    "FACULTY_PROMOTION_CERT": "Faculty Promotion Certification"
+  },
+  {
+    "FACULTY_SERVICE_RECORD": "Faculty Service Record"
+  },
+  {
+    "FACULTY_PERFORMANCE_APPRAISAL": "Faculty Performance Appraisal"
+  },
+  {
+    "FACULTY_SALARY_ADJUSTMENT": "Faculty Salary Adjustment Notice"
+  },
+  {
+    "FACULTY_PAYROLL_CERT": "Faculty Payroll Certification"
+  },
+  {
+    "INTERNSHIP_ENDORSEMENT": "Internship or Practicum Endorsement"
+  },
+  {
+    "CERT_INTERNSHIP_COMPLETION": "Internship or Practicum Completion Certificate"
+  },
+  {
+    "STUDENT_CONDUCT_REPORT": "Code of Conduct Violation Report"
+  },
+  {
+    "STUDENT_DISCIPLINARY_ACTION": "Student Disciplinary Action Form"
+  },
+  {
+    "MEMO_STUDENT_ORG": "Memorandum for Student Organizations"
+  },
+  {
+    "MEMO_ACAD_DEPT": "Memorandum for Academic Departments"
+  },
+  {
+    "MEMO_GENERAL": "Memorandum for Campus-wide Announcements"
+  },
+  {
+    "STUDENT_ORG_RECOGNITION": "Student Organization Recognition Form"
+  },
+  {
+    "STUDENT_ACTIVITY_PROPOSAL": "Student Organization Activity Proposal"
+  },
+  {
+    "STUDENT_ACTIVITY_PERMIT": "Approval of Student Activity or Event Permit"
+  },
+  {
+    "CERT_PARTICIPATION_ACTIVITY": "Certificate of Participation in Student Activities"
+  },
+  {
+    "CERT_LEADERSHIP": "Certificate of Leadership Student Council"
   }
 ]
