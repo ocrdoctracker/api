@@ -331,9 +331,13 @@ export async function upload(req, res) {
       (docRequest?.purpose.toLowerCase().trim() !== "others" &&
         Number(cnnResults?.best?.score || 0) <= 0.5)
     ) {
-      throw new Error(
-        "The uploaded document does not match the requested purpose. Please review the file."
-      );
+      return res
+        .status(400)
+        .json({ success: false, message: "The uploaded document does not match the requested purpose. Please review the file.", data: {
+        label: cnnResults?.best?.label,
+        score: cnnResults?.best?.score,
+        name: documentTypesobj[cnnResults?.best?.label || ""],
+      } });
     }
     const public_id = `documents/${sanitizePublicId(filename)}`;
     const uploadResult = await new Promise((resolve, reject) => {
@@ -384,6 +388,6 @@ export async function upload(req, res) {
   return res.json({
     success: true,
     data: docRequest,
-    message: "UPLOAD_SUCCESS",
+    message: "Document uploaded successfully!",
   });
 }

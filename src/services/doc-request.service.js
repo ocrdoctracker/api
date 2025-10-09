@@ -270,7 +270,10 @@ export async function updateDocRequestStatus(
 export async function updateDocRequestFile(docRequestId, documentFile, classification) {
   const sql = `
   UPDATE dbo."DocRequest"
-  SET "DocumentFile" = COALESCE("DocumentFile", '{}'::jsonb) || $2::jsonb, "Classification" = COALESCE("Classification", '{}'::jsonb) || $3::jsonb
+  SET 
+  "DocumentFile" = COALESCE("DocumentFile", '{}'::jsonb) || $2::jsonb, 
+  "Classification" = COALESCE("Classification", '{}'::jsonb) || $3::jsonb,
+  "DateLastUpdated" = NOW()
   WHERE "DocRequestId" = $1
   RETURNING *;
 `;
