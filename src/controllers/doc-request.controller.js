@@ -261,11 +261,7 @@ export async function updateStatus(req, res) {
       }
 
       if (
-        !docRequest?.documentFile?.publicId &&
-        (
-          requestStatus === DOCREQUEST_STATUS.CLOSED ||
-          requestStatus === DOCREQUEST_STATUS.COMPLETED)
-      ) {
+        !docRequest?.documentFile?.publicId && requestStatus === DOCREQUEST_STATUS.COMLPETED) {
         return res.status(400).json({
           success: false,
           message: "Document Request document file is required",
