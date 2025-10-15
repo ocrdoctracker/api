@@ -178,7 +178,6 @@ export async function getDocRequestFromUser(fromUserId, requestStatus, pageSize 
   };
 }
 
-
 export async function createDocRequest(
   fromUserId,
   assignedDepartmentId,
@@ -199,15 +198,18 @@ export async function createDocRequest(
 
 export async function updateDocRequest(
   docRequestId,
-  description
+  description,
+  documentFile = {}
 ) {
   const sql = `
     UPDATE dbo."DocRequest" set 
-    "Description" = $2
+    "Description" = $2,
+    "DocumentFile" = $3::jsonb, 
+    "DateLastUpdated" = NOW()
     WHERE "DocRequestId" = $1
     RETURNING *;
   `;
-  const params = [docRequestId, description]; // Default OTP for now
+  const params = [docRequestId, description, documentFile]; // Default OTP for now
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
 }

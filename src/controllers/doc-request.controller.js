@@ -55,12 +55,13 @@ export async function getDocRequest(req, res) {
       .status(400)
       .json({ success: false, message: ERROR_DOCREQUEST_NOT_FOUND });
   }
+  docRequest.purpose = documentTypesobj[docRequest.purpose];
   return res.json({ success: true, data: docRequest });
 }
 
 export async function getDocRequestAssigned(req, res) {
   const { userId, requestStatus, pageSize, pageIndex } = req.query;
-  let docRequest;
+  let docRequests;
   if (!userId) {
     return res
       .status(400)
@@ -73,8 +74,8 @@ export async function getDocRequestAssigned(req, res) {
         .status(400)
         .json({ success: false, message: ERROR_USER_NOT_FOUND });
     }
-    docRequest = await getDocRequestAssignedToUser(userId, requestStatus.split(","), pageSize, pageIndex);
-    docRequest.results.map(x=> {
+    docRequests = await getDocRequestAssignedToUser(userId, requestStatus.split(","), pageSize, pageIndex);
+    docRequests.results.map(x=> {
       x.purpose = documentTypesobj[x.purpose];
       return x;
     });
@@ -83,7 +84,7 @@ export async function getDocRequestAssigned(req, res) {
       .status(400)
       .json({ success: false, message: e?.message });
   }
-  return res.json({ success: true, data: docRequest });
+  return res.json({ success: true, data: docRequests });
 }
 
 export async function getDocRequestList(req, res) {
@@ -93,7 +94,7 @@ export async function getDocRequestList(req, res) {
       .status(400)
       .json({ success: false, message: "Missing fromUserId params" });
   }
-  let docRequest;
+  let docRequests;
   try {
     const user = await getUserById(fromUserId);
     if (!user) {
@@ -101,8 +102,8 @@ export async function getDocRequestList(req, res) {
         .status(400)
         .json({ success: false, message: ERROR_USER_NOT_FOUND });
     }
-    docRequest = await getDocRequestFromUser(fromUserId, requestStatus.split(","), pageSize, pageIndex);
-    docRequest.results.map(x=> {
+    docRequests = await getDocRequestFromUser(fromUserId, requestStatus.split(","), pageSize, pageIndex);
+    docRequests.results.map(x=> {
       x.purpose = documentTypesobj[x.purpose];
       return x;
     });
@@ -111,7 +112,7 @@ export async function getDocRequestList(req, res) {
       .status(400)
       .json({ success: false, message: e?.message });
   }
-  return res.json({ success: true, data: docRequest });
+  return res.json({ success: true, data: docRequests });
 }
 
 export async function create(req, res) {
@@ -148,6 +149,7 @@ export async function create(req, res) {
       requestStatus,
       description
     );
+    docRequest.purpose = documentTypesobj[docRequest.purpose];
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
@@ -162,10 +164,11 @@ export async function update(req, res) {
       .status(400)
       .json({ success: false, message: "Missing docRequestId params" });
   }
-  const { description } = req.body;
+  const { description, documentFile } = req.body;
   let docRequest;
   try {
-    docRequest = await updateDocRequest(docRequestId, description);
+    docRequest = await updateDocRequest(docRequestId, description, documentFile || {});
+    docRequest.purpose = documentTypesobj[docRequest.purpose];
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
@@ -274,6 +277,7 @@ export async function updateStatus(req, res) {
         requestStatus,
         reason || ""
       );
+      docRequest.purpose = documentTypesobj[docRequest.purpose];
     }
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
@@ -380,6 +384,7 @@ export async function upload(req, res) {
         name: documentTypesobj[cnnResults?.best?.label || ""],
       }
     );
+    docRequest.purpose = documentTypesobj[docRequest.purpose];
   } catch (error) {
     return res
       .status(400)

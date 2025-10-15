@@ -434,6 +434,27 @@ router.post("/", asyncHandler(create));
  *             properties:
  *               description:
  *                 type: string
+ *               documentFile:
+ *                 type: object
+ *                 properties:
+ *                   filename:
+ *                     type: string
+ *                   publicId:
+ *                     type: string
+ *                   createdAt:
+ *                     type: string
+ *                   bytes:
+ *                     type: string
+ *                   signature:
+ *                     type: string
+ *                   resourceType:
+ *                     type: string
+ *                   displayName:
+ *                     type: string
+ *                   url:
+ *                     type: string
+ *                   secureUrl:
+ *                     type: string
  *     responses:
  *       200:
  *         description: Document Request details

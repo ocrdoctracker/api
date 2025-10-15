@@ -1,6 +1,10 @@
-import { hashPassword } from '../utils/utils.js'
-import { getDepartmentById, createDepartment, updateDepartment, removeDepartment } from '../services/department.service.js';
+import { getDepartmentById, createDepartment, updateDepartment, removeDepartment, getAllDepartment } from '../services/department.service.js';
 import { CREATE_SUCCESS, ERROR_DEPARTMENT_EXISTS, ERROR_DEPARTMENT_NOT_FOUND, REMOVE_SUCCESS } from '../constants/department.constant.js';
+
+export async function getAll(req, res) {
+  let departments = await getAllDepartment();
+  return res.json({ success: true, data: departments });
+}
 
 export async function getDepartment(req, res) {
   const { departmentId } = req.params;

@@ -7,9 +7,38 @@
 import { Router } from "express";
 import { body, validationResult } from "express-validator";
 import { asyncHandler } from "../middlewares/async.js";
-import { getDepartment, create, update, remove } from "../controllers/department.controller.js";
+import { getDepartment, create, update, remove, getAll } from "../controllers/department.controller.js";
 
 const router = Router();
+
+/**
+ * @openapi
+ * /api/department/all:
+ *   get:
+ *     tags: [Department]
+ *     summary: Get all
+ *     responses:
+ *       200:
+ *         description: Get all
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       departmentId:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ */
+router.get("/all", asyncHandler(getAll));
+
 
 /**
  * @openapi

@@ -1,6 +1,18 @@
 import pool from "../db/db.js";
 import camelcaseKeys from "camelcase-keys";
 
+export async function getAllDepartment() {
+  const sql = `
+    SELECT *
+    FROM dbo."Department"
+    WHERE "Active" = true
+    LIMIT 1;
+  `;
+  const result = await pool.query(sql);
+  if (result.rows.length === 0) return null;
+  return camelcaseKeys(result.rows);
+}
+
 export async function getDepartmentById(departmentId) {
   const sql = `
     SELECT *
