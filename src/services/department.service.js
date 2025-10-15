@@ -5,8 +5,7 @@ export async function getAllDepartment() {
   const sql = `
     SELECT *
     FROM dbo."Department"
-    WHERE "Active" = true
-    LIMIT 1;
+    WHERE "Active" = true;
   `;
   const result = await pool.query(sql);
   if (result.rows.length === 0) return null;
