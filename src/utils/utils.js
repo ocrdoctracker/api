@@ -103,3 +103,7 @@ export const sanitizePublicId = (originalName = "") => {
   const base = path.parse(originalName).name; // drop extension
   return base.replace(/[^a-zA-Z0-9_\-]/g, "_").slice(0, 120);
 }
+
+export const getExtension = (originalName = "") => {
+  return path.parse(originalName).ext; // drop extension
+}

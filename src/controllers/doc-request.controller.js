@@ -18,6 +18,7 @@ import {
   readSingleFileFromMultipart,
   extractTextFromBuffer,
   sanitizePublicId,
+  getExtension,
 } from "../utils/utils.js";
 import { getUserById } from "../services/user.service.js";
 import {
@@ -29,6 +30,8 @@ import cloudinary from "../config/cloudinaryConfig.js";
 import { getDepartmentById } from "../services/department.service.js";
 import { ERROR_DEPARTMENT_NOT_FOUND } from "../constants/department.constant.js";
 import { loadDocumentTypes } from "../services/common.service.js";
+import { detectStampOnBuffer, initStamps } from "../services/stamp.service.js";
+
 const documentTypes = loadDocumentTypes();
 const documentTypesobj = Object.assign({}, ...documentTypes);
 
@@ -41,6 +44,12 @@ const clfPromise = loadLocalClassifier()
     console.error("❌ Failed to load model:", e.message);
     process.exit(1);
   });
+
+// (Optional) warm up stamp samples at boot (non-fatal if stamps folder missing)
+const stampsReady = initStamps().catch((e) =>
+  console.warn("⚠️ initStamps failed (continuing):", e.message)
+);
+
 
 export async function getDocRequest(req, res) {
   const { docRequestId } = req.params;
@@ -74,7 +83,7 @@ export async function getDocRequestAssigned(req, res) {
         .status(400)
         .json({ success: false, message: ERROR_USER_NOT_FOUND });
     }
-    docRequests = await getDocRequestAssignedToUser(userId, requestStatus.split(","), pageSize, pageIndex);
+    docRequests = await getDocRequestAssignedToUser(userId, requestStatus, pageSize, pageIndex);
     docRequests.results.map(x=> {
       x.purpose = documentTypesobj[x.purpose];
       return x;
@@ -82,7 +91,7 @@ export async function getDocRequestAssigned(req, res) {
   } catch (ex) {
     return res
       .status(400)
-      .json({ success: false, message: e?.message });
+      .json({ success: false, message: ex?.message });
   }
   return res.json({ success: true, data: docRequests });
 }
@@ -102,7 +111,7 @@ export async function getDocRequestList(req, res) {
         .status(400)
         .json({ success: false, message: ERROR_USER_NOT_FOUND });
     }
-    docRequests = await getDocRequestFromUser(fromUserId, requestStatus.split(","), pageSize, pageIndex);
+    docRequests = await getDocRequestFromUser(fromUserId, requestStatus, pageSize, pageIndex);
     docRequests.results.map(x=> {
       x.purpose = documentTypesobj[x.purpose];
       return x;
@@ -110,7 +119,7 @@ export async function getDocRequestList(req, res) {
   } catch (ex) {
     return res
       .status(400)
-      .json({ success: false, message: e?.message });
+      .json({ success: false, message: ex?.message });
   }
   return res.json({ success: true, data: docRequests });
 }
@@ -316,7 +325,13 @@ export async function upload(req, res) {
         return res.status(400).json({ error: "No text extracted" });
     }
 
-    const clf = await clfPromise;
+    // Ensure stamps are loaded (non-blocking if already done)
+    await stampsReady;
+    // Stamp detection works directly on the binary buffer (PDF/DOCX/Image)
+    const stampPromise = detectStampOnBuffer(buffer, mimeType);
+
+    // const clf = await clfPromise;
+    const [clf, stamp] = await Promise.all([clfPromise, stampPromise]);
     const cnnResults = classifyLocal(clf, extractedText, {
       threshold: Number(env?.cnn?.threshold),
       otherLabel: env?.cnn?.otherLabel,
@@ -339,7 +354,19 @@ export async function upload(req, res) {
         name: documentTypesobj[cnnResults?.best?.label || ""],
       } });
     }
-    const public_id = `documents/${sanitizePublicId(filename)}`;
+    if(!stamp.match && stamp.score < 0.9) {
+      return res
+        .status(400)
+        .json({ success: false, message: "The uploaded document does not have a documentary stamp.", data: {
+        label: cnnResults?.best?.label,
+        score: cnnResults?.best?.score,
+        stampScore: stamp.score,
+        stampFound: stamp.match,
+        name: documentTypesobj[cnnResults?.best?.label || ""],
+      } });
+
+    }
+    const public_id = `documents/${filename}`;
     const uploadResult = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {

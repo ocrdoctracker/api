@@ -14,6 +14,10 @@
 |-- package.json
 |-- public
     |-- document-types.json
+    |-- stamps
+        |-- stamp_sample1.png
+        |-- stamp_sample2.png
+        |-- stamp_sample3.png
 |-- README.md
 |-- scripts
     |-- train-bayes.js
@@ -55,6 +59,7 @@
         |-- department.service.js
         |-- doc-request.service.js
         |-- email.service.js
+        |-- stamp.service.js
         |-- user.service.js
     |-- utils
         |-- utils.js

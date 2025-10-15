@@ -124,6 +124,7 @@ router.get(
       .customSanitizer((value) => {
         // Always return an array
         if (Array.isArray(value)) return value;
+        else if (value && value.split(",").length > 0) return value.split(",");
         return [value];
       })
       .custom((values) => {
@@ -255,6 +256,7 @@ router.get(
       .customSanitizer((value) => {
         // Always return an array
         if (Array.isArray(value)) return value;
+        else if (value && value.split(",").length > 0) return value.split(",");
         return [value];
       })
       .custom((values) => {
