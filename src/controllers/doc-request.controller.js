@@ -1,3 +1,4 @@
+import path from "node:path";
 import {
   ERROR_DOCREQUEST_NOT_FOUND,
   CREATE_SUCCESS,
@@ -12,7 +13,7 @@ import {
   updateDocRequest,
   updateDocRequestFile,
   getDocRequestFromUser,
-  getDocRequestAssignedToUser
+  getDocRequestAssignedToUser,
 } from "../services/doc-request.service.js";
 import {
   readSingleFileFromMultipart,
@@ -20,7 +21,10 @@ import {
   sanitizePublicId,
   getExtension,
 } from "../utils/utils.js";
-import { getUserById } from "../services/user.service.js";
+import {
+  getUserById,
+  getAllUserByDepartment,
+} from "../services/user.service.js";
 import {
   loadLocalClassifier,
   classifyLocal,
@@ -31,6 +35,8 @@ import { getDepartmentById } from "../services/department.service.js";
 import { ERROR_DEPARTMENT_NOT_FOUND } from "../constants/department.constant.js";
 import { loadDocumentTypes } from "../services/common.service.js";
 import { detectStampOnBuffer, initStamps } from "../services/stamp.service.js";
+import { createNotification } from "../services/notifications.service.js";
+import { REQUEST_NOTIF } from "../constants/notifications.constant.js";
 
 const documentTypes = loadDocumentTypes();
 const documentTypesobj = Object.assign({}, ...documentTypes);
@@ -50,6 +56,28 @@ const stampsReady = initStamps().catch((e) =>
   console.warn("⚠️ initStamps failed (continuing):", e.message)
 );
 
+function guessFormat(filename, mimeType, fallback = "pdf") {
+  const ext = (path.extname(filename || "").toLowerCase() || "").replace(
+    /^\./,
+    ""
+  );
+  if (ext) return ext;
+  if ((mimeType || "").includes("pdf")) return "pdf";
+  if ((mimeType || "").includes("word")) return "docx";
+  if ((mimeType || "").includes("sheet") || (mimeType || "").includes("excel"))
+    return "xlsx";
+  if (
+    (mimeType || "").includes("presentation") ||
+    (mimeType || "").includes("powerpoint")
+  )
+    return "pptx";
+  return fallback;
+}
+
+function makeDownloadName(originalName, format) {
+  const base = (originalName || "").trim().replace(/\s+/g, " ");
+  return base.toLowerCase().endsWith(`.${format}`) ? base : `${base}.${format}`;
+}
 
 export async function getDocRequest(req, res) {
   const { docRequestId } = req.params;
@@ -83,15 +111,18 @@ export async function getDocRequestAssigned(req, res) {
         .status(400)
         .json({ success: false, message: ERROR_USER_NOT_FOUND });
     }
-    docRequests = await getDocRequestAssignedToUser(userId, requestStatus, pageSize, pageIndex);
-    docRequests.results.map(x=> {
+    docRequests = await getDocRequestAssignedToUser(
+      userId,
+      requestStatus,
+      pageSize,
+      pageIndex
+    );
+    docRequests.results.map((x) => {
       x.purpose = documentTypesobj[x.purpose];
       return x;
     });
   } catch (ex) {
-    return res
-      .status(400)
-      .json({ success: false, message: ex?.message });
+    return res.status(400).json({ success: false, message: ex?.message });
   }
   return res.json({ success: true, data: docRequests });
 }
@@ -111,15 +142,18 @@ export async function getDocRequestList(req, res) {
         .status(400)
         .json({ success: false, message: ERROR_USER_NOT_FOUND });
     }
-    docRequests = await getDocRequestFromUser(fromUserId, requestStatus, pageSize, pageIndex);
-    docRequests.results.map(x=> {
+    docRequests = await getDocRequestFromUser(
+      fromUserId,
+      requestStatus,
+      pageSize,
+      pageIndex
+    );
+    docRequests.results.map((x) => {
       x.purpose = documentTypesobj[x.purpose];
       return x;
     });
   } catch (ex) {
-    return res
-      .status(400)
-      .json({ success: false, message: ex?.message });
+    return res.status(400).json({ success: false, message: ex?.message });
   }
   return res.json({ success: true, data: docRequests });
 }
@@ -158,7 +192,28 @@ export async function create(req, res) {
       requestStatus,
       description
     );
+    docRequest = await getDocRequestById(docRequest?.docRequestId);
     docRequest.purpose = documentTypesobj[docRequest.purpose];
+    const getAllUsers = await getAllUserByDepartment(
+      docRequest?.assignedDepartment?.departmentId
+    );
+    const notifications = [];
+    for (const user of getAllUsers) {
+      notifications.push({
+        userId: user?.userId,
+        title: REQUEST_NOTIF.PENDING.title,
+        description: REQUEST_NOTIF.PENDING.description?.replace(
+          "{requestId}",
+          docRequest?.requestNo
+        ),
+        type: "DOC_REQUEST",
+        referenceId: docRequest?.docRequestId,
+      });
+    }
+    if (notifications.length > 0) {
+      const notifSent = await createNotification(notifications);
+      console.log(notifSent);
+    }
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
@@ -176,7 +231,12 @@ export async function update(req, res) {
   const { description, documentFile } = req.body;
   let docRequest;
   try {
-    docRequest = await updateDocRequest(docRequestId, description, documentFile || {});
+    docRequest = await updateDocRequest(
+      docRequestId,
+      description,
+      documentFile || {}
+    );
+    docRequest = await getDocRequestById(docRequestId);
     docRequest.purpose = documentTypesobj[docRequest.purpose];
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
@@ -270,7 +330,9 @@ export async function updateStatus(req, res) {
       }
 
       if (
-        !docRequest?.documentFile?.publicId && requestStatus === DOCREQUEST_STATUS.COMLPETED) {
+        !docRequest?.documentFile?.publicId &&
+        requestStatus === DOCREQUEST_STATUS.COMLPETED
+      ) {
         return res.status(400).json({
           success: false,
           message: "Document Request document file is required",
@@ -282,7 +344,35 @@ export async function updateStatus(req, res) {
         requestStatus,
         reason || ""
       );
+      docRequest = await getDocRequestById(docRequestId);
       docRequest.purpose = documentTypesobj[docRequest.purpose];
+
+      let title, description;
+
+      title = REQUEST_NOTIF[docRequest?.requestStatus?.toUpperCase()].title;
+      description = REQUEST_NOTIF[
+        docRequest?.requestStatus?.toUpperCase()
+      ].description
+        ?.replace("{requestId}", docRequest?.requestNo)
+        ?.replace("{departmentName}", docRequest?.assignedDepartment?.name);
+
+      const getAllUsers = await getAllUserByDepartment(
+        docRequest?.fromUser?.department?.departmentId
+      );
+      const notifications = [];
+      for (const user of getAllUsers) {
+        notifications.push({
+          userId: user?.userId,
+          title,
+          description,
+          type: "DOC_REQUEST",
+          referenceId: docRequest?.docRequestId,
+        });
+      }
+      if (notifications.length > 0) {
+        const notifSent = await createNotification(notifications);
+        console.log(notifSent);
+      }
     }
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
@@ -346,25 +436,29 @@ export async function upload(req, res) {
       (docRequest?.purpose.toLowerCase().trim() !== "others" &&
         Number(cnnResults?.best?.score || 0) <= 0.5)
     ) {
-      return res
-        .status(400)
-        .json({ success: false, message: "The uploaded document does not match the requested purpose. Please review the file.", data: {
-        label: cnnResults?.best?.label,
-        score: cnnResults?.best?.score,
-        name: documentTypesobj[cnnResults?.best?.label || ""],
-      } });
+      return res.status(400).json({
+        success: false,
+        message:
+          "The uploaded document does not match the requested purpose. Please review the file.",
+        data: {
+          label: cnnResults?.best?.label,
+          score: cnnResults?.best?.score,
+          name: documentTypesobj[cnnResults?.best?.label || ""],
+        },
+      });
     }
-    if(!stamp.match && stamp.score < 0.9) {
-      return res
-        .status(400)
-        .json({ success: false, message: "The uploaded document does not have a documentary stamp.", data: {
-        label: cnnResults?.best?.label,
-        score: cnnResults?.best?.score,
-        stampScore: stamp.score,
-        stampFound: stamp.match,
-        name: documentTypesobj[cnnResults?.best?.label || ""],
-      } });
-
+    if (!stamp.match && stamp.score < 0.9) {
+      return res.status(400).json({
+        success: false,
+        message: "The uploaded document does not have a documentary stamp.",
+        data: {
+          label: cnnResults?.best?.label,
+          score: cnnResults?.best?.score,
+          stampScore: stamp.score,
+          stampFound: stamp.match,
+          name: documentTypesobj[cnnResults?.best?.label || ""],
+        },
+      });
     }
     const public_id = `documents/${filename}`;
     const uploadResult = await new Promise((resolve, reject) => {
@@ -391,7 +485,8 @@ export async function upload(req, res) {
     docRequest = await updateDocRequestFile(
       docRequestId,
       {
-        filename, mimeType,
+        filename,
+        mimeType,
         publicId: uploadResult.public_id,
         createdAt: uploadResult.created_at,
         bytes: uploadResult.bytes,
@@ -407,7 +502,29 @@ export async function upload(req, res) {
         name: documentTypesobj[cnnResults?.best?.label || ""],
       }
     );
+    docRequest = await getDocRequestById(docRequestId);
     docRequest.purpose = documentTypesobj[docRequest.purpose];
+
+    const getAllUsers = await getAllUserByDepartment(
+      docRequest?.assignedDepartment?.departmentId
+    );
+
+    const notifications = [];
+    for (const user of getAllUsers) {
+      notifications.push({
+        userId: user?.userId,
+        title: REQUEST_NOTIF.PENDING.title,
+        description: REQUEST_NOTIF.UPLOADED.description?.replace(
+          "{requestId}",
+          docRequest?.requestNo
+        ),
+        type: "DOC_REQUEST",
+        referenceId: docRequest?.docRequestId,
+      });
+    }
+    if (notifications.length > 0) {
+      await createNotification(notifications);
+    }
   } catch (error) {
     return res
       .status(400)

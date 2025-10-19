@@ -32,3 +32,13 @@ export async function createUser(
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]); // => { userId, name, username, email, departmentId, active }
 }
+
+export async function getAllUserByDepartment(departmentId) {
+  const sql = `
+    SELECT *
+    FROM dbo."User"
+    WHERE "DepartmentId" = $1 AND "Active" = true;
+  `;
+  const result = await pool.query(sql, [departmentId]);
+  return camelcaseKeys(result.rows);
+}

@@ -18,6 +18,10 @@
         |-- stamp_sample1.png
         |-- stamp_sample2.png
         |-- stamp_sample3.png
+        |-- stamp_sample4.png
+        |-- stamp_sample5.png
+        |-- stamp_sample6.png
+        |-- stamp_sample7.png
 |-- README.md
 |-- scripts
     |-- train-bayes.js
@@ -32,6 +36,7 @@
         |-- auth.constant.js
         |-- department.constant.js
         |-- doc-request.constant.js
+        |-- notifications.constant.js
         |-- user.constant.js
     |-- controllers
         |-- auth.controller.js
@@ -39,6 +44,7 @@
         |-- department.controller.js
         |-- doc-classification.controller.js
         |-- doc-request.controller.js
+        |-- notifications.controller.js
         |-- user.controller.js
     |-- db
         |-- db.js
@@ -52,6 +58,7 @@
         |-- doc-classification.routes.js
         |-- doc-request.routes.js
         |-- index.routes.js
+        |-- notifications.routes.js
         |-- user.routes.js
     |-- services
         |-- auth.service.js
@@ -59,6 +66,7 @@
         |-- department.service.js
         |-- doc-request.service.js
         |-- email.service.js
+        |-- notifications.service.js
         |-- stamp.service.js
         |-- user.service.js
     |-- utils
