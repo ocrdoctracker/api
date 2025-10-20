@@ -101,7 +101,7 @@ export async function getDocRequestAssignedToUser(
     LEFT JOIN dbo."Department" fud ON fu."DepartmentId" = fud."DepartmentId"
     LEFT JOIN dbo."Department" d ON dc."AssignedDepartmentId" = d."DepartmentId"
     LEFT JOIN dbo."User" u ON d."DepartmentId" = u."DepartmentId"
-    WHERE u."UserId" = $1 AND ($2::text[] IS NULL OR dc."RequestStatus" = ANY($2))
+    WHERE u."UserId" = $1 AND ($2::text[] IS NULL OR dc."RequestStatus" = ANY($2)) AND dc."Active" = true
     ORDER BY dc."DateRequested" DESC
     LIMIT $3 OFFSET $4;
   `;
@@ -181,7 +181,7 @@ FROM (
   LEFT JOIN dbo."Department" fud ON fu."DepartmentId" = fud."DepartmentId"
   LEFT JOIN dbo."Department" d ON dc."AssignedDepartmentId" = d."DepartmentId"
   LEFT JOIN dbo."User" u ON d."DepartmentId" = u."DepartmentId"
-  WHERE dc."FromUserId" = $1
+  WHERE dc."FromUserId" = $1 AND dc."Active" = true
     AND ($2::text[] IS NULL OR dc."RequestStatus" = ANY($2))
   ORDER BY dc."DocRequestId", u."UserId"  -- choose which row to keep
 ) t
@@ -229,7 +229,7 @@ export async function createDocRequest(
     purpose,
     requestStatus,
     description,
-  ]; // Default OTP for now
+  ];
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
 }
@@ -247,7 +247,7 @@ export async function updateDocRequest(
     WHERE "DocRequestId" = $1
     RETURNING *;
   `;
-  const params = [docRequestId, description, documentFile]; // Default OTP for now
+  const params = [docRequestId, description, documentFile];
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
 }
@@ -321,7 +321,16 @@ export async function updateDocRequestFile(
   WHERE "DocRequestId" = $1
   RETURNING *;
 `;
-  const params = [docRequestId, documentFile, classification]; // Default OTP for now
+  const params = [docRequestId, documentFile, classification];
+  const result = await pool.query(sql, params);
+  return camelcaseKeys(result.rows[0]);
+}
+
+export async function deleteDocRequest(docRequestId,) {
+  const sql = `
+  UPDATE dbo."DocRequest" SET "Active" = false WHERE "DocRequestId" = $1;
+`;
+  const params = [docRequestId];
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
 }

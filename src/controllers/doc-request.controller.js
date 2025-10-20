@@ -14,6 +14,7 @@ import {
   updateDocRequestFile,
   getDocRequestFromUser,
   getDocRequestAssignedToUser,
+  deleteDocRequest
 } from "../services/doc-request.service.js";
 import {
   readSingleFileFromMultipart,
@@ -353,6 +354,7 @@ export async function updateStatus(req, res) {
       docRequest.purpose = documentTypesobj[docRequest.purpose];
 
       let title, description;
+      let users = [];
 
       title = REQUEST_NOTIF[docRequest?.requestStatus?.toUpperCase()].title;
       description = REQUEST_NOTIF[
@@ -361,11 +363,16 @@ export async function updateStatus(req, res) {
         ?.replace("{requestId}", docRequest?.requestNo)
         ?.replace("{departmentName}", docRequest?.assignedDepartment?.name);
 
-      const getAllUsers = await getAllUserByDepartment(
-        docRequest?.fromUser?.department?.departmentId
-      );
+        if(docRequest?.requestStatus === requestStatus.CANCELLED || docRequest?.requestStatus === requestStatus.CLOSED) {
+          const getAllUsers = await getAllUserByDepartment(
+            docRequest?.fromUser?.department?.departmentId
+          );
+          users = [...getAllUsers,]
+        } else {
+          users = [docRequest?.fromUser]
+        }
       const notifications = [];
-      for (const user of getAllUsers) {
+      for (const user of users) {
         notifications.push({
           userId: user?.userId,
           title,
@@ -511,15 +518,13 @@ export async function upload(req, res) {
     docRequest = await getDocRequestById(docRequestId);
     docRequest.purpose = documentTypesobj[docRequest.purpose];
 
-    const getAllUsers = await getAllUserByDepartment(
-      docRequest?.assignedDepartment?.departmentId
-    );
+    const users = [docRequest?.fromUser];
 
     const notifications = [];
-    for (const user of getAllUsers) {
+    for (const user of users) {
       notifications.push({
         userId: user?.userId,
-        title: REQUEST_NOTIF.PENDING.title,
+        title: REQUEST_NOTIF.UPLOADED.title,
         description: REQUEST_NOTIF.UPLOADED.description?.replace(
           "{requestId}",
           docRequest?.requestNo
@@ -532,6 +537,31 @@ export async function upload(req, res) {
     if (notifications.length > 0) {
       await createNotification(notifications);
     }
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ success: false, message: error.message || "Upload failed" });
+  }
+  return res.json({
+    success: true,
+    data: docRequest,
+    message: "Document uploaded successfully!",
+  });
+}
+
+export async function remove(req, res) {
+  const { docRequestId } = req.params;
+  let docRequest;
+  try {
+    // ensure the doc request exists
+    docRequest = await getDocRequestById(docRequestId);
+    if (!docRequest) {
+      return res
+        .status(400)
+        .json({ success: false, message: ERROR_DOCREQUEST_NOT_FOUND });
+    }
+
+    await deleteDocRequest(docRequestId);
   } catch (error) {
     return res
       .status(400)

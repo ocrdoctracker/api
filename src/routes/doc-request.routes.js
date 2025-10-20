@@ -14,7 +14,8 @@ import {
   updateStatus,
   upload,
   getDocRequestList,
-  getDocRequestAssigned
+  getDocRequestAssigned,
+  remove
 } from "../controllers/doc-request.controller.js";
 import { query } from "express-validator";
 
@@ -115,9 +116,7 @@ const router = Router();
 router.get(
   "/assigned",
   [
-    query("userId")
-      .optional()
-      .isInt().withMessage("userId must be a number"),
+    query("userId").optional().isInt().withMessage("userId must be a number"),
 
     query("requestStatus")
       .optional()
@@ -129,9 +128,27 @@ router.get(
       })
       .custom((values) => {
         values.forEach((v) => {
-          if (!["PENDING","CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].includes(v)) {
+          if (
+            ![
+              "PENDING",
+              "CANCELLED",
+              "REJECTED",
+              "APPROVED",
+              "PROCESSING",
+              "COMPLETED",
+              "CLOSED",
+            ].includes(v)
+          ) {
             throw new Error(
-              `Invalid requestStatus: ${v}. Must be one of: ${["PENDING","CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].join(", ")}`
+              `Invalid requestStatus: ${v}. Must be one of: ${[
+                "PENDING",
+                "CANCELLED",
+                "REJECTED",
+                "APPROVED",
+                "PROCESSING",
+                "COMPLETED",
+                "CLOSED",
+              ].join(", ")}`
             );
           }
         });
@@ -140,11 +157,13 @@ router.get(
 
     query("pageSize")
       .optional()
-      .isInt({ min: 1, max: 100 }).withMessage("pageSize must be between 1 and 100")
+      .isInt({ min: 1, max: 100 })
+      .withMessage("pageSize must be between 1 and 100")
       .toInt(),
     query("pageIndex")
       .optional()
-      .isInt({ min: 0 }).withMessage("pageIndex must be 0 or greater")
+      .isInt({ min: 0 })
+      .withMessage("pageIndex must be 0 or greater")
       .toInt(),
   ],
   asyncHandler(getDocRequestAssigned)
@@ -248,9 +267,9 @@ router.get(
   [
     query("fromUserId")
       .optional()
-      .isInt().withMessage("fromUserId must be a number"),
+      .isInt()
+      .withMessage("fromUserId must be a number"),
 
-      
     query("requestStatus")
       .optional()
       .customSanitizer((value) => {
@@ -261,22 +280,42 @@ router.get(
       })
       .custom((values) => {
         values.forEach((v) => {
-          if (!["PENDING","CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].includes(v)) {
+          if (
+            ![
+              "PENDING",
+              "CANCELLED",
+              "REJECTED",
+              "APPROVED",
+              "PROCESSING",
+              "COMPLETED",
+              "CLOSED",
+            ].includes(v)
+          ) {
             throw new Error(
-              `Invalid requestStatus: ${v}. Must be one of: ${["PENDING","CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].join(", ")}`
+              `Invalid requestStatus: ${v}. Must be one of: ${[
+                "PENDING",
+                "CANCELLED",
+                "REJECTED",
+                "APPROVED",
+                "PROCESSING",
+                "COMPLETED",
+                "CLOSED",
+              ].join(", ")}`
             );
           }
         });
         return true;
       }),
-      
+
     query("pageSize")
       .optional()
-      .isInt({ min: 1, max: 100 }).withMessage("pageSize must be between 1 and 100")
+      .isInt({ min: 1, max: 100 })
+      .withMessage("pageSize must be between 1 and 100")
       .toInt(),
     query("pageIndex")
       .optional()
-      .isInt({ min: 0 }).withMessage("pageIndex must be 0 or greater")
+      .isInt({ min: 0 })
+      .withMessage("pageIndex must be 0 or greater")
       .toInt(),
   ],
   asyncHandler(getDocRequestList)
@@ -338,7 +377,6 @@ router.get(
  *                       type: string
  */
 router.get("/:docRequestId", asyncHandler(getDocRequest));
-
 
 /**
  * @openapi
@@ -610,8 +648,24 @@ router.put(
       .withMessage("requestStatus is required")
       .isString()
       .withMessage("requestStatus must be a string")
-      .isIn(["CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"])
-      .withMessage(`requestStatus must be one of: ${["CANCELLED","REJECTED","APPROVED","PROCESSING","COMPLETED","CLOSED"].join(", ")}`),
+      .isIn([
+        "CANCELLED",
+        "REJECTED",
+        "APPROVED",
+        "PROCESSING",
+        "COMPLETED",
+        "CLOSED",
+      ])
+      .withMessage(
+        `requestStatus must be one of: ${[
+          "CANCELLED",
+          "REJECTED",
+          "APPROVED",
+          "PROCESSING",
+          "COMPLETED",
+          "CLOSED",
+        ].join(", ")}`
+      ),
 
     // reason is required only when status = CANCELLED or REJECTED
     body("reason")
@@ -698,9 +752,11 @@ router.put(
   "/:docRequestId/upload",
   [
     param("docRequestId")
-      .exists().withMessage("docRequestId is required in path")
+      .exists()
+      .withMessage("docRequestId is required in path")
       .toInt()
-      .isInt({ gt: 0 }).withMessage("docRequestId must be a positive integer"),
+      .isInt({ gt: 0 })
+      .withMessage("docRequestId must be a positive integer"),
 
     // final validator
     (req, res, next) => {
@@ -716,4 +772,62 @@ router.put(
   asyncHandler(upload)
 );
 
+/**
+ * @openapi
+ * /api/doc-request/{docRequestId}:
+ *   delete:
+ *     tags: [Document Request]
+ *     summary: Delete Document Request
+ *     parameters:
+ *       - in: path
+ *         name: docRequestId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The id of the Document Request
+ *     responses:
+ *       200:
+ *         description: Document Request details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     docRequestId:
+ *                       type: string
+ *                     fromUserId:
+ *                       type: string
+ *                     purpose:
+ *                       type: string
+ *                     dateRequested:
+ *                       type: string
+ *                     assignedDepartmentId:
+ *                       type: string
+ *                     dateAssigned:
+ *                       type: string
+ *                     dateProcessStarted:
+ *                       type: string
+ *                     dateProcessEnd:
+ *                       type: string
+ *                     dateCompleted:
+ *                       type: string
+ *                     requestStatus:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                     requestNo:
+ *                       type: string
+ *                     rejectReason:
+ *                       type: string
+ *                     cancelReason:
+ *                       type: string
+ *       401:
+ *         description: Invalid data
+ */
+router.delete("/:docRequestId", asyncHandler(remove));
 export default router;
