@@ -527,10 +527,7 @@ export async function upload(req, res) {
         type: "DOC_REQUEST",
         referenceId: docRequest?.docRequestId,
       });
-      const cacheKeyAll = getNotifCacheKey(KEY_NOTIF_ALL, user?.userId);
-      const cacheKeyCount = getNotifCacheKey(KEY_NOTIF_COUNT, user?.userId);
-      cache.del(cacheKeyAll);
-      cache.del(cacheKeyCount);
+      clearUserNotificationsCache(user?.userId);
     }
     if (notifications.length > 0) {
       await createNotification(notifications);
