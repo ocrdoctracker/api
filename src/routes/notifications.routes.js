@@ -7,7 +7,7 @@
 import { Router } from "express";
 import { body, validationResult } from "express-validator";
 import { asyncHandler } from "../middlewares/async.js";
-import { getNotifications, markAsRead } from "../controllers/notifications.controller.js";
+import { getNotifications, markAsRead, getTotalUnreadNotif } from "../controllers/notifications.controller.js";
 
 const router = Router();
 
@@ -70,6 +70,33 @@ const router = Router();
  */
 router.get("/user", asyncHandler(getNotifications));
 
+/**
+ * @openapi
+ * /api/notifications/{userId}/count:
+ *   get:
+ *     tags: [Notifications]
+ *     summary: Get total unread notification count by user
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The id of the user
+ *     responses:
+ *       200:
+ *         description: Count of unread notifications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: string
+ */
+router.get("/:userId/count", asyncHandler(getTotalUnreadNotif));
 
 /**
  * @openapi

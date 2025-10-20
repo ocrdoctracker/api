@@ -37,6 +37,33 @@ import { loadDocumentTypes } from "../services/common.service.js";
 import { detectStampOnBuffer, initStamps } from "../services/stamp.service.js";
 import { createNotification } from "../services/notifications.service.js";
 import { REQUEST_NOTIF } from "../constants/notifications.constant.js";
+import NodeCache from "node-cache";
+// Cache (TTL = 60s)
+const cache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
+
+// Key helpers
+export const KEY_NOTIF_LIST = (userId, pageIndex, pageSize) =>
+  `notif:list:${userId}:p${pageIndex}:s${pageSize}`;
+export const KEY_NOTIF_COUNT = (userId) => `notif:count:${userId}`;
+export const KEY_NOTIF_INDEX = (userId) => `notif:index:${userId}`;
+
+// Helper to invalidate ALL notification-related cache for a user
+function clearUserNotificationsCache(userId) {
+  const uid = String(userId);
+  const idxKey = KEY_NOTIF_INDEX(uid);
+  const arr = cache.get(idxKey) || [];
+
+  // Delete all cached pages for that user
+  if (arr.length) cache.del(arr);
+
+  // Delete the page index itself
+  cache.del(idxKey);
+
+  // Delete count (totalUnread)
+  cache.del(KEY_NOTIF_COUNT(uid));
+
+  console.log(`[Cache] Cleared all notification cache for user ${uid}`);
+}
 
 const documentTypes = loadDocumentTypes();
 const documentTypesobj = Object.assign({}, ...documentTypes);
@@ -55,29 +82,6 @@ const clfPromise = loadLocalClassifier()
 const stampsReady = initStamps().catch((e) =>
   console.warn("⚠️ initStamps failed (continuing):", e.message)
 );
-
-function guessFormat(filename, mimeType, fallback = "pdf") {
-  const ext = (path.extname(filename || "").toLowerCase() || "").replace(
-    /^\./,
-    ""
-  );
-  if (ext) return ext;
-  if ((mimeType || "").includes("pdf")) return "pdf";
-  if ((mimeType || "").includes("word")) return "docx";
-  if ((mimeType || "").includes("sheet") || (mimeType || "").includes("excel"))
-    return "xlsx";
-  if (
-    (mimeType || "").includes("presentation") ||
-    (mimeType || "").includes("powerpoint")
-  )
-    return "pptx";
-  return fallback;
-}
-
-function makeDownloadName(originalName, format) {
-  const base = (originalName || "").trim().replace(/\s+/g, " ");
-  return base.toLowerCase().endsWith(`.${format}`) ? base : `${base}.${format}`;
-}
 
 export async function getDocRequest(req, res) {
   const { docRequestId } = req.params;
@@ -209,6 +213,7 @@ export async function create(req, res) {
         type: "DOC_REQUEST",
         referenceId: docRequest?.docRequestId,
       });
+      clearUserNotificationsCache(user?.userId);
     }
     if (notifications.length > 0) {
       const notifSent = await createNotification(notifications);
@@ -368,6 +373,7 @@ export async function updateStatus(req, res) {
           type: "DOC_REQUEST",
           referenceId: docRequest?.docRequestId,
         });
+      clearUserNotificationsCache(user?.userId);
       }
       if (notifications.length > 0) {
         const notifSent = await createNotification(notifications);
@@ -521,6 +527,10 @@ export async function upload(req, res) {
         type: "DOC_REQUEST",
         referenceId: docRequest?.docRequestId,
       });
+      const cacheKeyAll = getNotifCacheKey(KEY_NOTIF_ALL, user?.userId);
+      const cacheKeyCount = getNotifCacheKey(KEY_NOTIF_COUNT, user?.userId);
+      cache.del(cacheKeyAll);
+      cache.del(cacheKeyCount);
     }
     if (notifications.length > 0) {
       await createNotification(notifications);

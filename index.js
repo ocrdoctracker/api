@@ -12,6 +12,12 @@ import { fileURLToPath } from 'url';
 import routes from './src/routes/index.routes.js';
 import { notFound, errorHandler } from './src/middlewares/error-handler.js';
 import { swaggerOptions } from './src/config/swagger.js';
+import NodeCache from "node-cache";
+
+// -----------------------------------------------------------------------------
+// Cache (TTL = 60s)
+const cache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
+
 
 const app = express();
 app.disable('x-powered-by');
@@ -156,5 +162,7 @@ if (!isVercel && isMainModule) {
       '',
     ];
     console.log(lines.join('\n'));
+    cache.flushAll();
+    console.log("Cache flushed");
   });
 }

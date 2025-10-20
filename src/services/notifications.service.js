@@ -15,6 +15,7 @@ export async function getNotificationsByUser(
     COUNT(*) OVER() AS total_rows
     FROM dbo."Notifications"
     WHERE "UserId" = $1
+    ORDER BY "Date" DESC
     LIMIT $2 OFFSET $3;
   `;
   const result = await pool.query(sql, [userId, size, offset]);
@@ -42,7 +43,7 @@ export async function getTotalUnreadNotifByUser(
   `;
   const result = await pool.query(sql, [userId]);
   if (result.rows.length === 0) return null;
-  return camelcaseKeys(result.rows[0]);
+  return camelcaseKeys(result.rows[0]?.count);
 }
 
 export async function createNotification(notifications) {
