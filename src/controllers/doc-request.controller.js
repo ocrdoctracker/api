@@ -363,9 +363,9 @@ export async function updateStatus(req, res) {
         ?.replace("{requestId}", docRequest?.requestNo)
         ?.replace("{departmentName}", docRequest?.assignedDepartment?.name);
 
-        if(docRequest?.requestStatus === requestStatus.CANCELLED || docRequest?.requestStatus === requestStatus.CLOSED) {
+        if(docRequest?.requestStatus === DOCREQUEST_STATUS.CANCELLED || docRequest?.requestStatus === DOCREQUEST_STATUS.CLOSED) {
           const getAllUsers = await getAllUserByDepartment(
-            docRequest?.fromUser?.department?.departmentId
+            docRequest?.assignedDepartment?.departmentId
           );
           users = [...getAllUsers,]
         } else {

@@ -45,6 +45,7 @@
         |-- doc-classification.controller.js
         |-- doc-request.controller.js
         |-- notifications.controller.js
+        |-- search.controller.js
         |-- user.controller.js
     |-- db
         |-- db.js
@@ -59,6 +60,7 @@
         |-- doc-request.routes.js
         |-- index.routes.js
         |-- notifications.routes.js
+        |-- search.routes.js
         |-- user.routes.js
     |-- services
         |-- auth.service.js
@@ -67,6 +69,7 @@
         |-- doc-request.service.js
         |-- email.service.js
         |-- notifications.service.js
+        |-- search.service.js
         |-- stamp.service.js
         |-- user.service.js
     |-- utils

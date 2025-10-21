@@ -12,7 +12,7 @@ import NodeCache from "node-cache";
 
 // -----------------------------------------------------------------------------
 // Cache (TTL = 60s)
-const cache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
+const cache = new NodeCache({ stdTTL: 30, checkperiod: 120 });
 
 // Key builders
 const KEY_NOTIF_LIST = (userId, pageIndex, pageSize) =>
