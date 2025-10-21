@@ -27,10 +27,47 @@ export async function createUser(
   `;
 
   // Note the order: passwordHash is $4, departmentId is $5
-  const params = [name, username, email, passwordHash, departmentId.toUpperCase()];
+  const params = [
+    name,
+    username,
+    email,
+    passwordHash,
+    departmentId.toUpperCase(),
+  ];
 
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]); // => { userId, name, username, email, departmentId, active }
+}
+
+export async function updateUser(userId, name, username, email) {
+  const sql = `
+    UPDATE dbo."User"
+    SET
+    "Name" = $2,
+    "Username" = $3,
+    "Email" = $4
+    WHERE "UserId" = $1
+    RETURNING *;
+  `;
+  const params = [userId, name, username, email];
+
+  const result = await pool.query(sql, params);
+  return camelcaseKeys(result.rows[0]);
+}
+
+export async function updateUserPassword(userId, passwordHash) {
+  const sql = `
+    UPDATE dbo."User"
+    SET
+    "Password" = $2
+    WHERE "UserId" = $1
+    RETURNING *;
+  `;
+
+  const params = [userId, passwordHash];
+
+  const result = await pool.query(sql, params);
+  return camelcaseKeys(result.rows[0]);
 }
 
 export async function getAllUserByDepartment(departmentId) {

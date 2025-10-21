@@ -7,7 +7,7 @@
 import { Router } from "express";
 import { body, validationResult } from "express-validator";
 import { asyncHandler } from "../middlewares/async.js";
-import { getUser, create } from "../controllers/user.controller.js";
+import { getUser, create, update, changePassword } from "../controllers/user.controller.js";
 
 const router = Router();
 
@@ -51,6 +51,7 @@ const router = Router();
  *                       type: string
  */
 router.get("/:userId", asyncHandler(getUser));
+
 /**
  * @openapi
  * /api/user:
@@ -128,5 +129,125 @@ router.post(
   ],
   asyncHandler(create)
 );
+
+/**
+ * @openapi
+ * /api/user/{userId}:
+ *   put:
+ *     tags: [User]
+ *     summary: Update user
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The id of the user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - username
+ *               - email
+ *             properties:
+ *               name:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userId:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     departmentId:
+ *                       type: string
+ *       401:
+ *         description: Invalid data
+ */
+router.put(
+  "/:userId",
+  asyncHandler(update)
+);
+
+/**
+ * @openapi
+ * /api/user/{userId}/change-password:
+ *   put:
+ *     tags: [User]
+ *     summary: Update user password
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The id of the user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - oldPassword
+ *               - newPassword
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User password successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userId:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     departmentId:
+ *                       type: string
+ *       401:
+ *         description: Invalid data
+ */
+router.put(
+  "/:userId/change-password",
+  asyncHandler(changePassword)
+);
+
 
 export default router;
