@@ -8,7 +8,6 @@ export async function getAllDepartment() {
     WHERE "Active" = true;
   `;
   const result = await pool.query(sql);
-  if (result.rows.length === 0) return null;
   return camelcaseKeys(result.rows);
 }
 

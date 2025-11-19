@@ -565,11 +565,11 @@ export async function remove(req, res) {
   } catch (error) {
     return res
       .status(400)
-      .json({ success: false, message: error.message || "Upload failed" });
+      .json({ success: false, message: error.message || "Failed to delete Document request" });
   }
   return res.json({
     success: true,
     data: docRequest,
-    message: "Document uploaded successfully!",
+    message: "Document request deleted successfully!",
   });
 }

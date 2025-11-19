@@ -96,4 +96,10 @@ export const env = {
 
     PDF_RENDER_TOP_PAGES: 3,
   },
+
+  google: {
+    apiKey: process.env.GOOGLE_API_KEY,
+    workflowConfigSheetId: process.env.GOOGLE_WORKFLOW_CONFIG_SHEET_ID,
+    workflowConfigSheetRange: process.env.GOOGLE_WORKFLOW_CONFIG_SHEET_RANGE,
+  }
 };
