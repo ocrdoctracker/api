@@ -1,4 +1,5 @@
 import { env } from "../config/env.js";
+
 // Put these in ENV in real life
 const API_KEY = env?.google?.apiKey; // ← replace with your key or use env
 const SPREADSHEET_ID = env?.google?.workflowConfigSheetId;
@@ -19,15 +20,15 @@ function transformWorkflow(rows) {
   };
 
   const docPurposeCol = colIndex("DocPurpose");
+  const docPurposeFileReqCol = colIndex("DocPurposeFileRequirement");
   const stepCol = colIndex("Steps");
   const approvalCol = colIndex("Approval");
   const fileUploadCol = colIndex("FileUpload");
   const deptCol = colIndex("DepartmentId");
+  const stepsFileRequirementCol = colIndex("StepsFileRequirements");
 
   const validYesNo = (v) => {
-    const s = String(v || "")
-      .trim()
-      .toLowerCase();
+    const s = String(v || "").trim().toLowerCase();
     return s === "yes" || s === "no";
   };
 
@@ -42,13 +43,16 @@ function transformWorkflow(rows) {
     const rowNum = index + 2; // actual sheet row number
 
     const docPurpose = r[docPurposeCol];
+    const docPurposeFileReqRaw = r[docPurposeFileReqCol];
     const stepRaw = r[stepCol];
     const approvalRaw = r[approvalCol];
     const fileUploadRaw = r[fileUploadCol];
     const deptRaw = r[deptCol];
+    const stepsFileRequirement = r[stepsFileRequirementCol];
 
-    // ---- VALIDATION ----
-    // skip missing docPurpose
+    // ---------- VALIDATION ----------
+
+    // DocPurpose required
     if (!docPurpose) {
       console.warn(`Skipping row ${rowNum}: Missing DocPurpose`);
       return;
@@ -78,26 +82,39 @@ function transformWorkflow(rows) {
     // DepartmentId must be a number
     const deptNum = Number(deptRaw);
     if (!deptRaw || Number.isNaN(deptNum)) {
-      console.warn(`Skipping row ${rowNum}: Invalid DepartmentId "${deptRaw}"`);
+      console.warn(
+        `Skipping row ${rowNum}: Invalid DepartmentId "${deptRaw}"`
+      );
       return;
     }
 
-    // ---- GROUPING ----
+    // ---------- GROUPING + DOC PURPOSE FILE REQUIREMENT ----------
+
     if (!groups[docPurpose]) {
       groups[docPurpose] = {
         docPurpose,
+        docPurposeFileRequirement: null, // will be filled from first non-empty value
         steps: [],
       };
     }
 
+    // If this row has a non-empty DocPurposeFileRequirement and group doesn't yet have one, set it
+    const trimmedReq = String(docPurposeFileReqRaw || "").trim();
+    if (trimmedReq && !groups[docPurpose].docPurposeFileRequirement) {
+      groups[docPurpose].docPurposeFileRequirement = trimmedReq;
+    }
+
+    // Add the validated step
     groups[docPurpose].steps.push({
       step: stepNum,
       approval: toBool(approvalRaw),
       department: deptNum,
       fileUpload: toBool(fileUploadRaw),
+      stepsFileRequirement: stepsFileRequirement ?? false,
     });
   });
 
+  // Return an array of { docPurpose, docPurposeFileRequirement, steps }
   return Object.values(groups);
 }
 
