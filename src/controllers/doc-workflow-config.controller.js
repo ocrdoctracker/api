@@ -44,52 +44,14 @@ function transformWorkflow(rows) {
 
     const docPurpose = r[docPurposeCol];
     const docPurposeFileReqRaw = r[docPurposeFileReqCol];
-    const stepRaw = r[stepCol];
-    const approvalRaw = r[approvalCol];
-    const fileUploadRaw = r[fileUploadCol];
-    const deptRaw = r[deptCol];
-    const stepsFileRequirement = r[stepsFileRequirementCol];
 
-    // ---------- VALIDATION ----------
-
-    // DocPurpose required
+    // ---------- DOC PURPOSE IS REQUIRED ----------
     if (!docPurpose) {
       console.warn(`Skipping row ${rowNum}: Missing DocPurpose`);
       return;
     }
 
-    // Steps must be a valid number
-    const stepNum = Number(stepRaw);
-    if (!stepRaw || Number.isNaN(stepNum)) {
-      console.warn(`Skipping row ${rowNum}: Invalid Step "${stepRaw}"`);
-      return;
-    }
-
-    // Approval must be Yes/No
-    if (!validYesNo(approvalRaw)) {
-      console.warn(`Skipping row ${rowNum}: Invalid Approval "${approvalRaw}"`);
-      return;
-    }
-
-    // FileUpload must be Yes/No
-    if (!validYesNo(fileUploadRaw)) {
-      console.warn(
-        `Skipping row ${rowNum}: Invalid FileUpload "${fileUploadRaw}"`
-      );
-      return;
-    }
-
-    // DepartmentId must be a number
-    const deptNum = Number(deptRaw);
-    if (!deptRaw || Number.isNaN(deptNum)) {
-      console.warn(
-        `Skipping row ${rowNum}: Invalid DepartmentId "${deptRaw}"`
-      );
-      return;
-    }
-
-    // ---------- GROUPING + DOC PURPOSE FILE REQUIREMENT ----------
-
+    // Ensure the group exists even if this row has NO valid steps
     if (!groups[docPurpose]) {
       groups[docPurpose] = {
         docPurpose,
@@ -104,13 +66,60 @@ function transformWorkflow(rows) {
       groups[docPurpose].docPurposeFileRequirement = trimmedReq;
     }
 
-    // Add the validated step
+    // ---------- STEP FIELDS ----------
+    const stepRaw = r[stepCol];
+    const approvalRaw = r[approvalCol];
+    const fileUploadRaw = r[fileUploadCol];
+    const deptRaw = r[deptCol];
+    const stepsFileRequirement = r[stepsFileRequirementCol];
+
+    // Check if this row even tries to define a step
+    const hasAnyStepData =
+      (stepRaw && String(stepRaw).trim() !== "") ||
+      (approvalRaw && String(approvalRaw).trim() !== "") ||
+      (fileUploadRaw && String(fileUploadRaw).trim() !== "") ||
+      (deptRaw && String(deptRaw).trim() !== "") ||
+      (stepsFileRequirement && String(stepsFileRequirement).trim() !== "");
+
+    // If there is absolutely no step data, we just keep the group and move on.
+    if (!hasAnyStepData) {
+      return;
+    }
+
+    // ---------- VALIDATION FOR STEP ----------
+    // Steps must be a valid number
+    const stepNum = Number(stepRaw);
+    if (!stepRaw || Number.isNaN(stepNum)) {
+      console.warn(
+        `Row ${rowNum}: Invalid Step "${stepRaw}", skipping step but keeping DocPurpose group.`
+      );
+      return;
+    }
+
+    // Approval must be Yes/No
+    if (!validYesNo(approvalRaw)) {
+      console.warn(
+        `Row ${rowNum}: Invalid Approval "${approvalRaw}", skipping step but keeping DocPurpose group.`
+      );
+      return;
+    }
+
+    // DepartmentId must be a number
+    const deptNum = Number(deptRaw);
+    if (!deptRaw || Number.isNaN(deptNum)) {
+      console.warn(
+        `Row ${rowNum}: Invalid DepartmentId "${deptRaw}", skipping step but keeping DocPurpose group.`
+      );
+      return;
+    }
+
+    // ---------- ADD VALIDATED STEP ----------
     groups[docPurpose].steps.push({
       step: stepNum,
       approval: toBool(approvalRaw),
-      department: deptNum,
+      departmentId: deptNum,
       fileUpload: toBool(fileUploadRaw),
-      stepsFileRequirement: stepsFileRequirement ?? false,
+      stepsFileRequirement: stepsFileRequirement ?? null,
     });
   });
 

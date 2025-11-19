@@ -172,5 +172,11 @@
   },
   {
     "CERT_LEADERSHIP": "Certificate of Leadership Student Council"
+  },
+  {
+    "COM_LETTER": "Communication Letter"
+  },
+  {
+    "BUDGET_PROPOSAL": "Budget Proposal"
   }
 ]
