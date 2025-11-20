@@ -21,6 +21,7 @@ export async function getDocRequestById(docRequestId) {
     dc."DocumentFile", 
     dc."Classification",
     dc."Steps",
+    dc."Stamp",
       json_build_object(
         'userId', fu."UserId",
         'name', fu."Name",
@@ -80,6 +81,7 @@ export async function getDocRequestAssignedToUser(
     dc."DocumentFile", 
     dc."Classification",
     dc."Steps",
+    dc."Stamp",
       json_build_object(
         'userId', fu."UserId",
         'name', fu."Name",
@@ -161,6 +163,7 @@ FROM (
     dc."DocumentFile",
     dc."Classification",
     dc."Steps",
+    dc."Stamp",
     json_build_object(
       'userId', fu."UserId",
       'name', fu."Name",
@@ -315,18 +318,20 @@ export async function updateDocRequestStatus(
 export async function updateDocRequestFile(
   docRequestId,
   documentFile,
-  classification
+  classification,
+  stamp
 ) {
   const sql = `
   UPDATE dbo."DocRequest"
   SET 
   "DocumentFile" = COALESCE("DocumentFile", '{}'::jsonb) || $2::jsonb, 
   "Classification" = COALESCE("Classification", '{}'::jsonb) || $3::jsonb,
+  "Stamp" = COALESCE("Stamp", '{}'::jsonb) || $4::jsonb,
   "DateLastUpdated" = NOW()
   WHERE "DocRequestId" = $1
   RETURNING *;
 `;
-  const params = [docRequestId, documentFile, classification];
+  const params = [docRequestId, documentFile, classification, stamp];
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
 }

@@ -469,19 +469,19 @@ export async function upload(req, res) {
         },
       });
     }
-    if (!stamp.match && stamp.score < 0.9) {
-      return res.status(400).json({
-        success: false,
-        message: "The uploaded document does not have a documentary stamp.",
-        data: {
-          label: cnnResults?.best?.label,
-          score: cnnResults?.best?.score,
-          stampScore: stamp.score,
-          stampFound: stamp.match,
-          name: documentTypesobj[cnnResults?.best?.label || ""],
-        },
-      });
-    }
+    // if (!stamp.match && stamp.score < 0.9) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "The uploaded document does not have a documentary stamp.",
+    //     data: {
+    //       label: cnnResults?.best?.label,
+    //       score: cnnResults?.best?.score,
+    //       stampScore: stamp.score,
+    //       stampFound: stamp.match,
+    //       name: documentTypesobj[cnnResults?.best?.label || ""],
+    //     },
+    //   });
+    // }
     const public_id = `documents/${filename}`;
     const uploadResult = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
@@ -517,12 +517,15 @@ export async function upload(req, res) {
         displayName: uploadResult.display_name,
         url: uploadResult.url,
         secureUrl: uploadResult.secure_url,
+        stampScore: stamp.score,
+        stampFound: stamp.match,
       },
       {
         label: cnnResults?.best?.label,
         score: cnnResults?.best?.score,
         name: documentTypesobj[cnnResults?.best?.label || ""],
-      }
+      },
+      stamp,
     );
     docRequest = await getDocRequestById(docRequestId);
     docRequest.purpose = documentTypesobj[docRequest.purpose];
