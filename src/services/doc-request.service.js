@@ -20,6 +20,7 @@ export async function getDocRequestById(docRequestId) {
     dc."RequestNo", 
     dc."DocumentFile", 
     dc."Classification",
+    dc."Steps",
       json_build_object(
         'userId', fu."UserId",
         'name', fu."Name",
@@ -78,6 +79,7 @@ export async function getDocRequestAssignedToUser(
     dc."RequestNo", 
     dc."DocumentFile", 
     dc."Classification",
+    dc."Steps",
       json_build_object(
         'userId', fu."UserId",
         'name', fu."Name",
@@ -158,6 +160,7 @@ FROM (
     dc."RequestNo",
     dc."DocumentFile",
     dc."Classification",
+    dc."Steps",
     json_build_object(
       'userId', fu."UserId",
       'name', fu."Name",
@@ -215,12 +218,13 @@ export async function createDocRequest(
   assignedDepartmentId,
   purpose,
   requestStatus,
-  description
+  description,
+  steps 
 ) {
   const sql = `
     INSERT INTO dbo."DocRequest"(
-    "FromUserId", "AssignedDepartmentId", "Purpose", "DateRequested", "RequestStatus", "Description")
-	VALUES ($1, $2, $3, NOW(), $4, $5)
+    "FromUserId", "AssignedDepartmentId", "Purpose", "DateRequested", "RequestStatus", "Description", "Steps")
+	VALUES ($1, $2, $3, NOW(), $4, $5, $6)
     RETURNING *;
   `;
   const params = [
@@ -229,6 +233,7 @@ export async function createDocRequest(
     purpose,
     requestStatus,
     description,
+    JSON.stringify(steps),
   ];
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);

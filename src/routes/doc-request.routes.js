@@ -15,7 +15,7 @@ import {
   upload,
   getDocRequestList,
   getDocRequestAssigned,
-  remove
+  remove,
 } from "../controllers/doc-request.controller.js";
 import { query } from "express-validator";
 
@@ -392,7 +392,6 @@ router.get("/:docRequestId", asyncHandler(getDocRequest));
  *             type: object
  *             required:
  *               - fromUserId
- *               - assignedDepartmentId
  *               - purpose
  *               - description
  *             properties:
@@ -404,6 +403,21 @@ router.get("/:docRequestId", asyncHandler(getDocRequest));
  *                 type: string
  *               description:
  *                 type: string
+ *               steps:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     step:
+ *                       type: number
+ *                     approval:
+ *                       type: boolean
+ *                     departmentId:
+ *                       type: string
+ *                     stepsFileRequirement:
+ *                       type: string
+ *                     expectedCompletion:
+ *                       type: string
  *     responses:
  *       200:
  *         description: Document Request details
@@ -445,10 +459,44 @@ router.get("/:docRequestId", asyncHandler(getDocRequest));
  *                       type: string
  *                     cancelReason:
  *                       type: string
+ *                     steps:
+ *                       type: string
  *       401:
  *         description: Invalid data
  */
-router.post("/", asyncHandler(create));
+router.post(
+  "/",
+  [
+    body("steps").custom((steps, { req }) => {
+      const hasSteps = Array.isArray(steps) && steps.length > 0;
+
+      // If no steps → assignedDepartmentId REQUIRED
+      if (!hasSteps) {
+        if (!req.body.assignedDepartmentId) {
+          throw new Error(
+            "assignedDepartmentId is required when steps is empty"
+          );
+        }
+      }
+
+      return true;
+    }),
+
+    // Validate assignedDepartmentId only when steps is empty
+    body("assignedDepartmentId").custom((value, { req }) => {
+      const steps = req.body.steps;
+
+      const hasSteps = Array.isArray(steps) && steps.length > 0;
+
+      if (!hasSteps && !value) {
+        throw new Error("assignedDepartmentId is required when steps is empty");
+      }
+
+      return true;
+    }),
+  ],
+  asyncHandler(create)
+);
 
 /**
  * @openapi

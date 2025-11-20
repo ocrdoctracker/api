@@ -23,7 +23,6 @@ function transformWorkflow(rows) {
   const docPurposeFileReqCol = colIndex("DocPurposeFileRequirement");
   const stepCol = colIndex("Steps");
   const approvalCol = colIndex("Approval");
-  const fileUploadCol = colIndex("FileUpload");
   const deptCol = colIndex("DepartmentId");
   const stepsFileRequirementCol = colIndex("StepsFileRequirements");
 
@@ -69,7 +68,6 @@ function transformWorkflow(rows) {
     // ---------- STEP FIELDS ----------
     const stepRaw = r[stepCol];
     const approvalRaw = r[approvalCol];
-    const fileUploadRaw = r[fileUploadCol];
     const deptRaw = r[deptCol];
     const stepsFileRequirement = r[stepsFileRequirementCol];
 
@@ -77,7 +75,6 @@ function transformWorkflow(rows) {
     const hasAnyStepData =
       (stepRaw && String(stepRaw).trim() !== "") ||
       (approvalRaw && String(approvalRaw).trim() !== "") ||
-      (fileUploadRaw && String(fileUploadRaw).trim() !== "") ||
       (deptRaw && String(deptRaw).trim() !== "") ||
       (stepsFileRequirement && String(stepsFileRequirement).trim() !== "");
 
@@ -118,7 +115,6 @@ function transformWorkflow(rows) {
       step: stepNum,
       approval: toBool(approvalRaw),
       departmentId: deptNum,
-      fileUpload: toBool(fileUploadRaw),
       stepsFileRequirement: stepsFileRequirement ?? null,
     });
   });

@@ -14,7 +14,7 @@ import {
   updateDocRequestFile,
   getDocRequestFromUser,
   getDocRequestAssignedToUser,
-  deleteDocRequest
+  deleteDocRequest,
 } from "../services/doc-request.service.js";
 import {
   readSingleFileFromMultipart,
@@ -123,6 +123,7 @@ export async function getDocRequestAssigned(req, res) {
       pageIndex
     );
     docRequests.results.map((x) => {
+      x.assignedDepartment = x.assignedDepartment?.departmentId ? x.assignedDepartment : null,
       x.purpose = documentTypesobj[x.purpose];
       return x;
     });
@@ -154,6 +155,7 @@ export async function getDocRequestList(req, res) {
       pageIndex
     );
     docRequests.results.map((x) => {
+      x.assignedDepartment = x.assignedDepartment?.departmentId ? x.assignedDepartment : null,
       x.purpose = documentTypesobj[x.purpose];
       return x;
     });
@@ -164,13 +166,14 @@ export async function getDocRequestList(req, res) {
 }
 
 export async function create(req, res) {
-  const { fromUserId, assignedDepartmentId, purpose, description } = req.body;
+  const { fromUserId, assignedDepartmentId, purpose, description, steps } =
+    req.body;
   if (!fromUserId) {
     return res
       .status(400)
       .json({ success: false, message: "Missing fromUserId params" });
   }
-  if (!assignedDepartmentId) {
+  if (!steps && !assignedDepartmentId) {
     return res
       .status(400)
       .json({ success: false, message: "Missing assignedDepartmentId params" });
@@ -183,19 +186,22 @@ export async function create(req, res) {
         .status(400)
         .json({ success: false, message: ERROR_USER_NOT_FOUND });
     }
-    const department = await getDepartmentById(assignedDepartmentId);
-    if (!department) {
-      return res
-        .status(400)
-        .json({ success: false, message: ERROR_DEPARTMENT_NOT_FOUND });
+    if (!steps) {
+      const department = await getDepartmentById(assignedDepartmentId);
+      if (!department) {
+        return res
+          .status(400)
+          .json({ success: false, message: ERROR_DEPARTMENT_NOT_FOUND });
+      }
     }
     const requestStatus = DOCREQUEST_STATUS.PENDING;
     docRequest = await createDocRequest(
       fromUserId,
-      assignedDepartmentId,
+      (steps && steps.length > 0 ? null : assignedDepartmentId),
       purpose,
       requestStatus,
-      description
+      description,
+      steps
     );
     docRequest = await getDocRequestById(docRequest?.docRequestId);
     docRequest.purpose = documentTypesobj[docRequest.purpose];
@@ -363,14 +369,17 @@ export async function updateStatus(req, res) {
         ?.replace("{requestId}", docRequest?.requestNo)
         ?.replace("{departmentName}", docRequest?.assignedDepartment?.name);
 
-        if(docRequest?.requestStatus === DOCREQUEST_STATUS.CANCELLED || docRequest?.requestStatus === DOCREQUEST_STATUS.CLOSED) {
-          const getAllUsers = await getAllUserByDepartment(
-            docRequest?.assignedDepartment?.departmentId
-          );
-          users = [...getAllUsers,]
-        } else {
-          users = [docRequest?.fromUser]
-        }
+      if (
+        docRequest?.requestStatus === DOCREQUEST_STATUS.CANCELLED ||
+        docRequest?.requestStatus === DOCREQUEST_STATUS.CLOSED
+      ) {
+        const getAllUsers = await getAllUserByDepartment(
+          docRequest?.assignedDepartment?.departmentId
+        );
+        users = [...getAllUsers];
+      } else {
+        users = [docRequest?.fromUser];
+      }
       const notifications = [];
       for (const user of users) {
         notifications.push({
@@ -380,7 +389,7 @@ export async function updateStatus(req, res) {
           type: "DOC_REQUEST",
           referenceId: docRequest?.docRequestId,
         });
-      clearUserNotificationsCache(user?.userId);
+        clearUserNotificationsCache(user?.userId);
       }
       if (notifications.length > 0) {
         const notifSent = await createNotification(notifications);
@@ -565,7 +574,10 @@ export async function remove(req, res) {
   } catch (error) {
     return res
       .status(400)
-      .json({ success: false, message: error.message || "Failed to delete Document request" });
+      .json({
+        success: false,
+        message: error.message || "Failed to delete Document request",
+      });
   }
   return res.json({
     success: true,
