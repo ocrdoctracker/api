@@ -63,25 +63,57 @@ export async function getDocRequestAssignedToUser(
   const offset = index * size;
 
   const sql = `
+    -- 1) Get the user's department
+    WITH user_dept AS (
+      SELECT "UserId", "DepartmentId"
+      FROM dbo."User"
+      WHERE "UserId" = $1
+    ),
+
+    -- 2) Filter DocRequest rows that belong to this user's department
+    filtered AS (
+      SELECT
+        dc.*,
+        ud."DepartmentId" AS "UserDepartmentId"
+      FROM dbo."DocRequest" dc
+      CROSS JOIN user_dept ud
+      WHERE
+        dc."Active" = true
+        AND (
+          -- Match via AssignedDepartmentId
+          dc."AssignedDepartmentId" = ud."DepartmentId"
+          -- OR match via ANY steps[].departmentId
+          OR EXISTS (
+            SELECT 1
+            FROM jsonb_array_elements(COALESCE(dc."Steps", '[]'::jsonb)) AS step
+            WHERE (step->>'departmentId')::bigint = ud."DepartmentId"
+          )
+        )
+        AND ($2::text[] IS NULL OR dc."RequestStatus" = ANY($2))
+    )
+
     SELECT 
-    dc."DocRequestId", 
-    dc."FromUserId", 
-    dc."Purpose", 
-    dc."DateRequested", 
-    dc."DateProcessStarted", 
-    dc."DateProcessEnd", 
-    dc."DateCompleted", 
-    dc."DateClosed", 
-    dc."DateLastUpdated", 
-    dc."RequestStatus", 
-    dc."Description", 
-    dc."RejectReason", 
-    dc."CancelReason", 
-    dc."RequestNo", 
-    dc."DocumentFile", 
-    dc."Classification",
-    dc."Steps",
-    dc."Stamp",
+      f."DocRequestId", 
+      f."FromUserId", 
+      f."Purpose", 
+      f."DateRequested", 
+      f."DateProcessStarted", 
+      f."DateProcessEnd", 
+      f."DateCompleted", 
+      f."DateClosed", 
+      f."DateLastUpdated", 
+      f."RequestStatus", 
+      f."Description", 
+      f."RejectReason", 
+      f."CancelReason", 
+      f."RequestNo", 
+      f."DocumentFile", 
+      f."Classification",
+      f."Steps",
+      f."Stamp",
+      f."AssignedDepartmentId",
+      f."UserDepartmentId",
+
       json_build_object(
         'userId', fu."UserId",
         'name', fu."Name",
@@ -94,19 +126,25 @@ export async function getDocRequestAssignedToUser(
                       ),
         'active', fu."Active"
       ) AS "fromUser",
+
+      -- assignedDepartment: use AssignedDepartmentId first, else user's dept
       json_build_object(
         'departmentId', d."DepartmentId",
         'name', d."Name",
         'active', d."Active"
       ) AS "assignedDepartment",
-           COUNT(dc.*) OVER() AS total_rows
-    FROM dbo."DocRequest" dc
-    LEFT JOIN dbo."User" fu ON dc."FromUserId" = fu."UserId"
-    LEFT JOIN dbo."Department" fud ON fu."DepartmentId" = fud."DepartmentId"
-    LEFT JOIN dbo."Department" d ON dc."AssignedDepartmentId" = d."DepartmentId"
-    LEFT JOIN dbo."User" u ON d."DepartmentId" = u."DepartmentId"
-    WHERE u."UserId" = $1 AND ($2::text[] IS NULL OR dc."RequestStatus" = ANY($2)) AND dc."Active" = true
-    ORDER BY dc."DateRequested" DESC
+
+      COUNT(f.*) OVER() AS total_rows
+
+    FROM filtered f
+    LEFT JOIN dbo."User" fu
+      ON f."FromUserId" = fu."UserId"
+    LEFT JOIN dbo."Department" fud
+      ON fu."DepartmentId" = fud."DepartmentId"
+    LEFT JOIN dbo."Department" d
+      ON d."DepartmentId" = COALESCE(f."AssignedDepartmentId", f."UserDepartmentId")
+
+    ORDER BY f."DateRequested" DESC
     LIMIT $3 OFFSET $4;
   `;
 
@@ -222,7 +260,7 @@ export async function createDocRequest(
   purpose,
   requestStatus,
   description,
-  steps 
+  steps
 ) {
   const sql = `
     INSERT INTO dbo."DocRequest"(
@@ -336,7 +374,7 @@ export async function updateDocRequestFile(
   return camelcaseKeys(result.rows[0]);
 }
 
-export async function deleteDocRequest(docRequestId,) {
+export async function deleteDocRequest(docRequestId) {
   const sql = `
   UPDATE dbo."DocRequest" SET "Active" = false WHERE "DocRequestId" = $1;
 `;
