@@ -7,7 +7,7 @@ import commonRoutes from './common.routes.js';
 import docClassificationRoutes from './doc-classification.routes.js';
 import notificationsRoutes from './notifications.routes.js';
 import searchRoutes from './search.routes.js';
-import docWorkflowConfigRoutes from './doc-workflow-config.routes.js';
+import docRequestWorkflowRoutes from './doc-request-workflow.routes.js';
 
 const router = Router();
 
@@ -19,6 +19,6 @@ router.use('/common', commonRoutes);
 router.use('/doc-classification', docClassificationRoutes);
 router.use('/notifications', notificationsRoutes);
 router.use('/search', searchRoutes);
-router.use('/doc-workflow-config', docWorkflowConfigRoutes);
+router.use('/doc-request-workflow', docRequestWorkflowRoutes);
 
 export default router;

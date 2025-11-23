@@ -18,10 +18,13 @@ export async function getDocRequestById(docRequestId) {
     dc."RejectReason", 
     dc."CancelReason", 
     dc."RequestNo", 
-    dc."DocumentFile", 
-    dc."Classification",
+    dc."DocRequestFile", 
+    dc."DocRequestClassification",
+    dc."DocRequestStamp",
+    dc."DocRequirementFile", 
+    dc."DocRequirementClassification",
+    dc."DocRequirementStamp",
     dc."Steps",
-    dc."Stamp",
       json_build_object(
         'userId', fu."UserId",
         'name', fu."Name",
@@ -63,87 +66,84 @@ export async function getDocRequestAssignedToUser(
   const offset = index * size;
 
   const sql = `
-    -- 1) Get the user's department
     WITH user_dept AS (
-      SELECT "UserId", "DepartmentId"
-      FROM dbo."User"
-      WHERE "UserId" = $1
-    ),
+  SELECT "UserId", "DepartmentId"
+  FROM dbo."User"
+  WHERE "UserId" = $1
+),
 
-    -- 2) Filter DocRequest rows that belong to this user's department
-    filtered AS (
-      SELECT
-        dc.*,
-        ud."DepartmentId" AS "UserDepartmentId"
-      FROM dbo."DocRequest" dc
-      CROSS JOIN user_dept ud
-      WHERE
-        dc."Active" = true
-        AND (
-          -- Match via AssignedDepartmentId
-          dc."AssignedDepartmentId" = ud."DepartmentId"
-          -- OR match via ANY steps[].departmentId
-          OR EXISTS (
-            SELECT 1
-            FROM jsonb_array_elements(COALESCE(dc."Steps", '[]'::jsonb)) AS step
-            WHERE (step->>'departmentId')::bigint = ud."DepartmentId"
-          )
-        )
-        AND ($2::text[] IS NULL OR dc."RequestStatus" = ANY($2))
+filtered AS (
+  SELECT
+    dc.*,
+    ud."DepartmentId" AS "UserDepartmentId"
+  FROM dbo."DocRequest" dc
+  CROSS JOIN user_dept ud
+  WHERE
+    dc."Active" = true
+    AND (
+      dc."AssignedDepartmentId" = ud."DepartmentId"
+      OR EXISTS (
+        SELECT 1
+        FROM jsonb_array_elements(COALESCE(dc."Steps", '[]'::jsonb)) AS step
+        WHERE (step->>'departmentId')::bigint = ud."DepartmentId"
+      )
     )
+    AND ($2::text[] IS NULL OR dc."RequestStatus" = ANY($2))
+)
 
-    SELECT 
-      f."DocRequestId", 
-      f."FromUserId", 
-      f."Purpose", 
-      f."DateRequested", 
-      f."DateProcessStarted", 
-      f."DateProcessEnd", 
-      f."DateCompleted", 
-      f."DateClosed", 
-      f."DateLastUpdated", 
-      f."RequestStatus", 
-      f."Description", 
-      f."RejectReason", 
-      f."CancelReason", 
-      f."RequestNo", 
-      f."DocumentFile", 
-      f."Classification",
-      f."Steps",
-      f."Stamp",
-      f."AssignedDepartmentId",
-      f."UserDepartmentId",
+SELECT 
+  f."DocRequestId", 
+  f."FromUserId", 
+  f."Purpose", 
+  f."DateRequested", 
+  f."DateProcessStarted", 
+  f."DateProcessEnd", 
+  f."DateCompleted", 
+  f."DateClosed", 
+  f."DateLastUpdated", 
+  f."RequestStatus", 
+  f."Description", 
+  f."RejectReason", 
+  f."CancelReason", 
+  f."RequestNo", 
+  f."DocRequestFile", 
+  f."DocRequestClassification",
+  f."DocRequestStamp",
+  f."DocRequirementFile", 
+  f."DocRequirementClassification",
+  f."DocRequirementStamp",
+  f."Steps",
+  f."AssignedDepartmentId",
+  f."UserDepartmentId",
 
-      json_build_object(
-        'userId', fu."UserId",
-        'name', fu."Name",
-        'username', fu."Username",
-        'email', fu."Email",
-        'department', json_build_object(
-                        'departmentId', fud."DepartmentId",
-                        'name', fud."Name",
-                        'active', fud."Active"
-                      ),
-        'active', fu."Active"
-      ) AS "fromUser",
+  json_build_object(
+    'userId', fu."UserId",
+    'name', fu."Name",
+    'username', fu."Username",
+    'email', fu."Email",
+    'department', json_build_object(
+                    'departmentId', fud."DepartmentId",
+                    'name', fud."Name",
+                    'active', fud."Active"
+                  ),
+    'active', fu."Active"
+  ) AS "fromUser",
 
-      -- assignedDepartment: use AssignedDepartmentId first, else user's dept
-      json_build_object(
-        'departmentId', d."DepartmentId",
-        'name', d."Name",
-        'active', d."Active"
-      ) AS "assignedDepartment",
+  json_build_object(
+    'departmentId', d."DepartmentId",
+    'name', d."Name",
+    'active', d."Active"
+  ) AS "assignedDepartment",
 
-      COUNT(f.*) OVER() AS total_rows
+  COUNT(f.*) OVER() AS total_rows
 
-    FROM filtered f
-    LEFT JOIN dbo."User" fu
-      ON f."FromUserId" = fu."UserId"
-    LEFT JOIN dbo."Department" fud
-      ON fu."DepartmentId" = fud."DepartmentId"
-    LEFT JOIN dbo."Department" d
-      ON d."DepartmentId" = COALESCE(f."AssignedDepartmentId", f."UserDepartmentId")
-
+FROM filtered f
+LEFT JOIN dbo."User" fu
+  ON f."FromUserId" = fu."UserId"
+LEFT JOIN dbo."Department" fud
+  ON fu."DepartmentId" = fud."DepartmentId"
+LEFT JOIN dbo."Department" d
+  ON d."DepartmentId" = COALESCE(f."AssignedDepartmentId", f."UserDepartmentId")
     ORDER BY f."DateRequested" DESC
     LIMIT $3 OFFSET $4;
   `;
@@ -198,10 +198,13 @@ FROM (
     dc."RejectReason",
     dc."CancelReason",
     dc."RequestNo",
-    dc."DocumentFile",
-    dc."Classification",
+    dc."DocRequestFile", 
+    dc."DocRequestClassification",
+    dc."DocRequestStamp",
+    dc."DocRequirementFile", 
+    dc."DocRequirementClassification",
+    dc."DocRequirementStamp",
     dc."Steps",
-    dc."Stamp",
     json_build_object(
       'userId', fu."UserId",
       'name', fu."Name",
@@ -260,12 +263,11 @@ export async function createDocRequest(
   purpose,
   requestStatus,
   description,
-  steps
 ) {
   const sql = `
     INSERT INTO dbo."DocRequest"(
-    "FromUserId", "AssignedDepartmentId", "Purpose", "DateRequested", "RequestStatus", "Description", "Steps")
-	VALUES ($1, $2, $3, NOW(), $4, $5, $6)
+    "FromUserId", "AssignedDepartmentId", "Purpose", "DateRequested", "RequestStatus", "Description")
+	VALUES ($1, $2, $3, NOW(), $4, $5)
     RETURNING *;
   `;
   const params = [
@@ -274,7 +276,44 @@ export async function createDocRequest(
     purpose,
     requestStatus,
     description,
+  ];
+  const result = await pool.query(sql, params);
+  return camelcaseKeys(result.rows[0]);
+}
+
+export async function createDocRequestWorkflow(
+  fromUserId,
+  purpose,
+  requestStatus,
+  description,
+  steps,
+  docRequirementFile,
+  docRequirementClassification,
+  docRequirementStamp,
+) {
+  const sql = `
+    INSERT INTO dbo."DocRequest"(
+    "FromUserId", 
+    "Purpose", 
+    "DateRequested", 
+    "RequestStatus", 
+    "Description", 
+    "Steps", 
+    "DocRequirementFile", 
+    "DocRequirementClassification", 
+    "DocRequirementStamp")
+	VALUES ($1, $2, NOW(), $3, $4, $5, $6, $7, $8)
+    RETURNING *;
+  `;
+  const params = [
+    fromUserId,
+    purpose,
+    requestStatus,
+    description,
     JSON.stringify(steps),
+    JSON.stringify(docRequirementFile),
+    JSON.stringify(docRequirementClassification),
+    JSON.stringify(docRequirementStamp),
   ];
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
@@ -288,7 +327,7 @@ export async function updateDocRequest(
   const sql = `
     UPDATE dbo."DocRequest" set 
     "Description" = $2,
-    "DocumentFile" = $3::jsonb, 
+    "DocRequestFile" = $3::jsonb, 
     "DateLastUpdated" = NOW()
     WHERE "DocRequestId" = $1
     RETURNING *;
@@ -353,23 +392,42 @@ export async function updateDocRequestStatus(
   return camelcaseKeys(result.rows[0]);
 }
 
+export async function updateDocRequestWorkflowStatus(
+  docRequestId,
+  requestStatus, // send strings like "APPROVED"
+  steps
+) {
+  const sql = `
+    UPDATE dbo."DocRequest"
+    SET
+      "RequestStatus" = $2::text,
+      "Steps" = $3,
+      "DateLastUpdated" = NOW()
+    WHERE "DocRequestId" = $1
+    RETURNING *;
+  `;
+  const params = [docRequestId, requestStatus, JSON.stringify(steps)];
+  const result = await pool.query(sql, params);
+  return camelcaseKeys(result.rows[0]);
+}
+
 export async function updateDocRequestFile(
   docRequestId,
-  documentFile,
-  classification,
-  stamp
+  docRequestFile,
+  docRequestClassification,
+  docRequestStamp
 ) {
   const sql = `
   UPDATE dbo."DocRequest"
   SET 
-  "DocumentFile" = COALESCE("DocumentFile", '{}'::jsonb) || $2::jsonb, 
-  "Classification" = COALESCE("Classification", '{}'::jsonb) || $3::jsonb,
-  "Stamp" = COALESCE("Stamp", '{}'::jsonb) || $4::jsonb,
+  "DocRequestFile" = COALESCE("DocRequestFile", '{}'::jsonb) || $2::jsonb, 
+  "DocRequestClassification" = COALESCE("DocRequestClassification", '{}'::jsonb) || $3::jsonb,
+  "DocRequestStamp" = COALESCE("DocRequestStamp", '{}'::jsonb) || $4::jsonb,
   "DateLastUpdated" = NOW()
   WHERE "DocRequestId" = $1
   RETURNING *;
 `;
-  const params = [docRequestId, documentFile, classification, stamp];
+  const params = [docRequestId, docRequestFile, docRequestClassification, docRequestStamp];
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
 }

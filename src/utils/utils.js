@@ -1,5 +1,5 @@
-import bcrypt from 'bcryptjs';
-import { env } from '../config/env.js';
+import bcrypt from "bcryptjs";
+import { env } from "../config/env.js";
 import { randomInt } from "crypto";
 import Busboy from "busboy";
 import { createRequire } from "node:module";
@@ -25,7 +25,11 @@ export async function extractTextFromBuffer(filename, buf) {
   throw new Error("Unsupported file type. Use PDF, DOCX, or TXT.");
 }
 function cleanup(s) {
-  return String(s).replace(/\u0000/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+  return String(s)
+    .replace(/\u0000/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
 }
 
 export async function hashPassword(plain) {
@@ -62,15 +66,21 @@ export const generateIndentityCode = (id) => {
   return String(id).padStart(6, "0");
 };
 
-
-export const readSingleFileFromMultipart = (req, { maxBytes = 10 * 1024 * 1024 } = {}) => {
+export const readSingleFileFromMultipart = (
+  req,
+  { maxBytes = 10 * 1024 * 1024 } = {}
+) => {
   return new Promise((resolve, reject) => {
-    const bb = Busboy({ headers: req.headers, limits: { files: 1, fileSize: maxBytes } });
+    const bb = Busboy({
+      headers: req.headers,
+      limits: { files: 1, fileSize: maxBytes },
+    });
 
-    const chunks = [];
+    const chunks = []; // array of Buffer
     let filename = "upload.bin";
     let mimeType = "application/octet-stream";
     let total = 0;
+    const fields = {}; // plain object for form fields
 
     bb.on("file", (_name, file, info) => {
       filename = info?.filename || filename;
@@ -86,12 +96,24 @@ export const readSingleFileFromMultipart = (req, { maxBytes = 10 * 1024 * 1024 }
       });
     });
 
+    // collect regular form fields
+    bb.on("field", (name, value) => {
+      // last value wins if duplicate field names
+      fields[name] = value;
+    });
+
     bb.on("finish", () => {
-      if (!total) {
-        return reject(new Error("No file received"));
-      }
-      const buffer = Buffer.concat(chunks);
-      resolve({ filename, mimeType, size: total, buffer });
+      const buffer = total ? Buffer.concat(chunks) : null;
+
+      // We NO LONGER reject when no file is received.
+      // Caller checks `size` if they want to enforce a file.
+      resolve({
+        filename: total ? filename : null,
+        mimeType: total ? mimeType : null,
+        size: total,
+        buffer,
+        fields,
+      });
     });
 
     bb.on("error", reject);
@@ -102,8 +124,8 @@ export const readSingleFileFromMultipart = (req, { maxBytes = 10 * 1024 * 1024 }
 export const sanitizePublicId = (originalName = "") => {
   const base = path.parse(originalName).name; // drop extension
   return base.replace(/[^a-zA-Z0-9_\-]/g, "_").slice(0, 120);
-}
+};
 
 export const getExtension = (originalName = "") => {
   return path.parse(originalName).ext; // drop extension
-}
+};

@@ -45,7 +45,7 @@ export async function searchDocRequest(keyword, userId) {
       -- keyword filter (handles bigint via ::text)
       (
         COALESCE($1, '') = '' OR
-        dc."Purpose" ILIKE '%' || $1 || '%' OR
+        TRIM(LOWER(dc."Purpose")) ILIKE '%' || $1 || '%' OR
         LOWER(dc."DocRequestId"::text) ILIKE '%' || $1 || '%' OR
         LOWER(dc."RequestNo") ILIKE '%' || $1 || '%' OR
         LOWER(fud."Name") ILIKE '%' || $1 || '%' OR

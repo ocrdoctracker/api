@@ -7,6 +7,7 @@
 import { Router } from "express";
 import { body, param, validationResult } from "express-validator";
 import { asyncHandler } from "../middlewares/async.js";
+import { multipartDocRequest, parseStepsMiddleware } from "../middlewares/multipartDocRequest.js";
 import {
   getDocRequest,
   create,
@@ -20,6 +21,54 @@ import {
 import { query } from "express-validator";
 
 const router = Router();
+
+const createDocRequestValidators = [
+  body("fromUserId").notEmpty().withMessage("fromUserId is required"),
+  body("purpose").notEmpty().withMessage("purpose is required"),
+  body("description").notEmpty().withMessage("description is required"),
+
+  body("steps").custom((steps, { req }) => {
+    const hasSteps = Array.isArray(steps) && steps.length > 0;
+
+    // If no steps → assignedDepartmentId REQUIRED (your original rule)
+    if (!hasSteps) {
+      if (!req.body.assignedDepartmentId) {
+        throw new Error(
+          "assignedDepartmentId is required when steps is empty"
+        );
+      }
+    }
+
+    // If has steps → file REQUIRED (new conditional rule)
+    // if (hasSteps && !req.file) {
+    //   throw new Error("file is required when steps is not empty");
+    // }
+
+    return true;
+  }),
+
+  body("assignedDepartmentId").custom((value, { req }) => {
+    const steps = req.body.steps;
+    const hasSteps = Array.isArray(steps) && steps.length > 0;
+
+    if (!hasSteps && !value) {
+      throw new Error("assignedDepartmentId is required when steps is empty");
+    }
+
+    return true;
+  }),
+
+  // final validator (same style as /upload route)
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const err = new Error(errors.array()[0].msg);
+      err.status = 400;
+      return next(err);
+    }
+    next();
+  },
+];
 
 /**
  * @openapi
@@ -384,10 +433,13 @@ router.get("/:docRequestId", asyncHandler(getDocRequest));
  *   post:
  *     tags: [Document Request]
  *     summary: Create Document Request
+ *     description: |
+ *       Creates a Document Request with optional file upload.
+ *       If `steps` is not empty, `file` is required.
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
@@ -395,29 +447,24 @@ router.get("/:docRequestId", asyncHandler(getDocRequest));
  *               - purpose
  *               - description
  *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Required when `steps` is not empty.
  *               fromUserId:
  *                 type: string
  *               assignedDepartmentId:
  *                 type: string
+ *                 description: Required when `steps` is empty.
  *               purpose:
  *                 type: string
  *               description:
  *                 type: string
  *               steps:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     step:
- *                       type: number
- *                     approval:
- *                       type: boolean
- *                     departmentId:
- *                       type: string
- *                     stepsFileRequirement:
- *                       type: string
- *                     expectedCompletion:
- *                       type: string
+ *                 type: string
+ *                 description: >
+ *                   JSON string of the steps array, e.g.
+ *                   `[{"step":1,"approval":true,"departmentId":"1","stepsFileRequirement":"Endorsement Letter","expectedApproval":"2025-11-22"}]`
  *     responses:
  *       200:
  *         description: Document Request details
@@ -461,40 +508,15 @@ router.get("/:docRequestId", asyncHandler(getDocRequest));
  *                       type: string
  *                     steps:
  *                       type: string
- *       401:
+ *       400:
  *         description: Invalid data
  */
+
 router.post(
   "/",
-  [
-    body("steps").custom((steps, { req }) => {
-      const hasSteps = Array.isArray(steps) && steps.length > 0;
-
-      // If no steps → assignedDepartmentId REQUIRED
-      if (!hasSteps) {
-        if (!req.body.assignedDepartmentId) {
-          throw new Error(
-            "assignedDepartmentId is required when steps is empty"
-          );
-        }
-      }
-
-      return true;
-    }),
-
-    // Validate assignedDepartmentId only when steps is empty
-    body("assignedDepartmentId").custom((value, { req }) => {
-      const steps = req.body.steps;
-
-      const hasSteps = Array.isArray(steps) && steps.length > 0;
-
-      if (!hasSteps && !value) {
-        throw new Error("assignedDepartmentId is required when steps is empty");
-      }
-
-      return true;
-    }),
-  ],
+  multipartDocRequest,   // uses Busboy helper, like your upload
+  parseStepsMiddleware,  // steps: string -> array
+  createDocRequestValidators,
   asyncHandler(create)
 );
 

@@ -9,6 +9,7 @@ import { ERROR_USER_NOT_FOUND } from "../constants/user.constant.js";
 import {
   getDocRequestById,
   createDocRequest,
+  createDocRequestWorkflow,
   updateDocRequestStatus,
   updateDocRequest,
   updateDocRequestFile,
@@ -97,7 +98,7 @@ export async function getDocRequest(req, res) {
       .status(400)
       .json({ success: false, message: ERROR_DOCREQUEST_NOT_FOUND });
   }
-  docRequest.purpose = documentTypesobj[docRequest.purpose];
+  docRequest.purposeName = documentTypesobj[docRequest.purpose];
   return res.json({ success: true, data: docRequest });
 }
 
@@ -123,8 +124,10 @@ export async function getDocRequestAssigned(req, res) {
       pageIndex
     );
     docRequests.results.map((x) => {
-      x.assignedDepartment = x.assignedDepartment?.departmentId ? x.assignedDepartment : null,
-      x.purpose = documentTypesobj[x.purpose];
+      (x.assignedDepartment = x.assignedDepartment?.departmentId
+        ? x.assignedDepartment
+        : null),
+        (x.purposeName = documentTypesobj[x.purpose]);
       return x;
     });
   } catch (ex) {
@@ -155,8 +158,10 @@ export async function getDocRequestList(req, res) {
       pageIndex
     );
     docRequests.results.map((x) => {
-      x.assignedDepartment = x.assignedDepartment?.departmentId ? x.assignedDepartment : null,
-      x.purpose = documentTypesobj[x.purpose];
+      (x.assignedDepartment = x.assignedDepartment?.departmentId
+        ? x.assignedDepartment
+        : null),
+        (x.purposeName = documentTypesobj[x.purpose]);
       return x;
     });
   } catch (ex) {
@@ -166,8 +171,9 @@ export async function getDocRequestList(req, res) {
 }
 
 export async function create(req, res) {
-  const { fromUserId, assignedDepartmentId, purpose, description, steps } =
+  let { fromUserId, assignedDepartmentId, purpose, description, steps } =
     req.body;
+  const file = req.file; // { filename, mimeType, size, buffer } | null
   if (!fromUserId) {
     return res
       .status(400)
@@ -178,6 +184,14 @@ export async function create(req, res) {
       .status(400)
       .json({ success: false, message: "Missing assignedDepartmentId params" });
   }
+
+  // Extra safety
+  // if (Array.isArray(steps) && steps.length > 0) {
+  //   return res.status(400).json({
+  //     success: false,
+  //     message: "File is required when steps is not empty",
+  //   });
+  // }
   let docRequest;
   try {
     const user = await getUserById(fromUserId);
@@ -194,17 +208,109 @@ export async function create(req, res) {
           .json({ success: false, message: ERROR_DEPARTMENT_NOT_FOUND });
       }
     }
+
     const requestStatus = DOCREQUEST_STATUS.PENDING;
-    docRequest = await createDocRequest(
-      fromUserId,
-      (steps && steps.length > 0 ? null : assignedDepartmentId),
-      purpose,
-      requestStatus,
-      description,
-      steps
-    );
+    if(file) {
+      const { filename, mimeType, size, buffer } = file;
+      // Extract text (best-effort). If not needed, remove this block.
+      let extractedText = "";
+      try {
+        extractedText = await extractTextFromBuffer(filename, buffer);
+        if (!extractedText)
+          return res.status(400).json({ message: "No text extracted" });
+      } catch (e) {
+        // non-fatal: continue without extracted text
+        extractedText = "";
+        if (!extractedText)
+          return res.status(400).json({ message: "No text extracted" });
+      }
+
+      // Ensure stamps are loaded (non-blocking if already done)
+      await stampsReady;
+      // Stamp detection works directly on the binary buffer (PDF/DOCX/Image)
+      const stampPromise = detectStampOnBuffer(buffer, mimeType);
+
+      // const clf = await clfPromise;
+      const [clf, stamp] = await Promise.all([clfPromise, stampPromise]);
+      const cnnResults = classifyLocal(clf, extractedText, {
+        threshold: Number(env?.cnn?.threshold),
+        otherLabel: env?.cnn?.otherLabel,
+        topK: 5,
+      });
+      if (
+        !cnnResults?.best?.label ||
+        cnnResults?.best?.label === "" ||
+        !documentTypesobj[cnnResults?.best?.label || ""] ||
+        (purpose.toLowerCase().trim() !== "others" &&
+          cnnResults?.best?.label !== purpose) ||
+        (purpose.toLowerCase().trim() !== "others" &&
+          Number(cnnResults?.best?.score || 0) <= 0.5)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "The uploaded document does not match the requested purpose. Please review the file.",
+          data: {
+            label: cnnResults?.best?.label,
+            score: cnnResults?.best?.score,
+            name: documentTypesobj[cnnResults?.best?.label || ""],
+          },
+        });
+      }
+      const public_id = `documents/${filename}`;
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            resource_type: "raw",
+            public_id, // stable name (folder + clean base)
+            overwrite: true, // replace if same public_id
+            use_filename: false, // we control public_id ourselves
+            unique_filename: false,
+          },
+          (err, result) => (err ? reject(err) : resolve(result))
+        );
+        stream.end(buffer);
+      });
+
+      if (!uploadResult?.public_id) {
+        throw new Error("Unable to upload to cloud storage");
+      }
+      docRequest = await createDocRequestWorkflow(
+        fromUserId,
+        purpose,
+        requestStatus,
+        description,
+        steps,
+        {
+          filename,
+          mimeType,
+          publicId: uploadResult.public_id,
+          createdAt: uploadResult.created_at,
+          bytes: uploadResult.bytes,
+          signature: uploadResult.signature,
+          resourceType: uploadResult.resource_type,
+          displayName: uploadResult.display_name,
+          url: uploadResult.url,
+          secureUrl: uploadResult.secure_url,
+        },
+        {
+          label: cnnResults?.best?.label,
+          score: cnnResults?.best?.score,
+          name: documentTypesobj[cnnResults?.best?.label || ""],
+        },
+        stamp
+      );
+    } else {
+      docRequest = await createDocRequest(
+        fromUserId,
+        assignedDepartmentId,
+        purpose,
+        requestStatus,
+        description,
+      );
+    }
     docRequest = await getDocRequestById(docRequest?.docRequestId);
-    docRequest.purpose = documentTypesobj[docRequest.purpose];
+    docRequest.purposeName = documentTypesobj[docRequest.purpose];
     const getAllUsers = await getAllUserByDepartment(
       docRequest?.assignedDepartment?.departmentId
     );
@@ -249,7 +355,7 @@ export async function update(req, res) {
       documentFile || {}
     );
     docRequest = await getDocRequestById(docRequestId);
-    docRequest.purpose = documentTypesobj[docRequest.purpose];
+    docRequest.purposeName = documentTypesobj[docRequest.purpose];
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
@@ -357,7 +463,7 @@ export async function updateStatus(req, res) {
         reason || ""
       );
       docRequest = await getDocRequestById(docRequestId);
-      docRequest.purpose = documentTypesobj[docRequest.purpose];
+      docRequest.purposeName = documentTypesobj[docRequest.purpose];
 
       let title, description;
       let users = [];
@@ -429,12 +535,12 @@ export async function upload(req, res) {
     try {
       extractedText = await extractTextFromBuffer(filename, buffer);
       if (!extractedText)
-        return res.status(400).json({ error: "No text extracted" });
+        return res.status(400).json({ message: "No text extracted" });
     } catch (e) {
       // non-fatal: continue without extracted text
       extractedText = "";
       if (!extractedText)
-        return res.status(400).json({ error: "No text extracted" });
+        return res.status(400).json({ message: "No text extracted" });
     }
 
     // Ensure stamps are loaded (non-blocking if already done)
@@ -469,19 +575,6 @@ export async function upload(req, res) {
         },
       });
     }
-    // if (!stamp.match && stamp.score < 0.9) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "The uploaded document does not have a documentary stamp.",
-    //     data: {
-    //       label: cnnResults?.best?.label,
-    //       score: cnnResults?.best?.score,
-    //       stampScore: stamp.score,
-    //       stampFound: stamp.match,
-    //       name: documentTypesobj[cnnResults?.best?.label || ""],
-    //     },
-    //   });
-    // }
     const public_id = `documents/${filename}`;
     const uploadResult = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
@@ -517,18 +610,16 @@ export async function upload(req, res) {
         displayName: uploadResult.display_name,
         url: uploadResult.url,
         secureUrl: uploadResult.secure_url,
-        stampScore: stamp.score,
-        stampFound: stamp.match,
       },
       {
         label: cnnResults?.best?.label,
         score: cnnResults?.best?.score,
         name: documentTypesobj[cnnResults?.best?.label || ""],
       },
-      stamp,
+      stamp
     );
     docRequest = await getDocRequestById(docRequestId);
-    docRequest.purpose = documentTypesobj[docRequest.purpose];
+    docRequest.purposeName = documentTypesobj[docRequest.purpose];
 
     const users = [docRequest?.fromUser];
 
@@ -575,12 +666,10 @@ export async function remove(req, res) {
 
     await deleteDocRequest(docRequestId);
   } catch (error) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: error.message || "Failed to delete Document request",
-      });
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Failed to delete Document request",
+    });
   }
   return res.json({
     success: true,
