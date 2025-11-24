@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS dbo."DocRequest" (
   "RejectReason"         VARCHAR,
   "CancelReason"         VARCHAR,
   "RequestNo" TEXT GENERATED ALWAYS AS ('D-' || lpad(("DocRequestId")::text, 6, '0')) STORED,
-  "DocumentFile" JSONB,
+  "DocRequestFile" JSONB,
   "Classification" JSONB,
   CONSTRAINT "DocRequest_pkey" PRIMARY KEY ("DocRequestId")
 );

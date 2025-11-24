@@ -347,13 +347,13 @@ export async function update(req, res) {
       .status(400)
       .json({ success: false, message: "Missing docRequestId params" });
   }
-  const { description, documentFile } = req.body;
+  const { description, docRequestFile } = req.body;
   let docRequest;
   try {
     docRequest = await updateDocRequest(
       docRequestId,
       description,
-      documentFile || {}
+      docRequestFile || {}
     );
     docRequest = await getDocRequestById(docRequestId);
     docRequest.purposeName = documentTypesobj[docRequest.purpose];
@@ -449,7 +449,7 @@ export async function updateStatus(req, res) {
       }
 
       if (
-        !docRequest?.documentFile?.publicId &&
+        !docRequest?.docRequestFile?.publicId &&
         requestStatus === DOCREQUEST_STATUS.COMLPETED
       ) {
         return res.status(400).json({

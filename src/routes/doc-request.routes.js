@@ -544,7 +544,7 @@ router.post(
  *             properties:
  *               description:
  *                 type: string
- *               documentFile:
+ *               docRequestFile:
  *                 type: object
  *                 properties:
  *                   filename:

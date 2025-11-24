@@ -18,8 +18,13 @@ export async function searchDocRequest(keyword, userId) {
       dc."RejectReason",
       dc."CancelReason",
       dc."RequestNo",
-      dc."DocumentFile",
-      dc."Classification",
+      dc."Steps", 
+      dc."DocRequestFile", 
+      dc."DocRequestClassification",
+      dc."DocRequestStamp",
+      dc."DocRequirementFile", 
+      dc."DocRequirementClassification",
+      dc."DocRequirementStamp",
       json_build_object(
         'userId', fu."UserId",
         'name', fu."Name",
@@ -87,8 +92,13 @@ export async function searchDocRequestAttachment(keyword, userId) {
       dc."RejectReason",
       dc."CancelReason",
       dc."RequestNo",
-      dc."DocumentFile",
-      dc."Classification",
+      dc."Steps", 
+      dc."DocRequestFile", 
+      dc."DocRequestClassification",
+      dc."DocRequestStamp",
+      dc."DocRequirementFile", 
+      dc."DocRequirementClassification",
+      dc."DocRequirementStamp",
       json_build_object(
         'userId', fu."UserId",
         'name', fu."Name",
@@ -114,10 +124,10 @@ export async function searchDocRequestAttachment(keyword, userId) {
       -- keyword filter (handles bigint via ::text)
       (
         COALESCE($1, '') = '' OR
-        LOWER(dc."DocumentFile"->>'filename') ILIKE '%' || $1 || '%' OR
-        LOWER(dc."DocumentFile"->>'mimeType') ILIKE '%' || $1 || '%' OR
-        LOWER(dc."DocumentFile"->>'publicId') ILIKE '%' || $1 || '%' OR
-        LOWER(dc."DocumentFile"->>'displayName') ILIKE '%' || $1 || '%'
+        LOWER(dc."DocRequestFile"->>'filename') ILIKE '%' || $1 || '%' OR
+        LOWER(dc."DocRequestFile"->>'mimeType') ILIKE '%' || $1 || '%' OR
+        LOWER(dc."DocRequestFile"->>'publicId') ILIKE '%' || $1 || '%' OR
+        LOWER(dc."DocRequestFile"->>'displayName') ILIKE '%' || $1 || '%'
       )
       AND dc."Active" = TRUE
       AND (
@@ -129,7 +139,7 @@ export async function searchDocRequestAttachment(keyword, userId) {
             AND u2."DepartmentId" = dc."AssignedDepartmentId"
         )
       )
-    ORDER BY (dc."DocumentFile"->>'createdAt')::timestamptz DESC NULLS LAST;
+    ORDER BY (dc."DocRequestFile"->>'createdAt')::timestamptz DESC NULLS LAST;
   `;
 
   const result = await pool.query(sql, [keyword?.trim()?.toLowerCase() ?? '', userId]);

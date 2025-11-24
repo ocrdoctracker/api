@@ -18,13 +18,13 @@ export async function getDocRequestById(docRequestId) {
     dc."RejectReason", 
     dc."CancelReason", 
     dc."RequestNo", 
+    dc."Steps", 
     dc."DocRequestFile", 
     dc."DocRequestClassification",
     dc."DocRequestStamp",
     dc."DocRequirementFile", 
     dc."DocRequirementClassification",
     dc."DocRequirementStamp",
-    dc."Steps",
       json_build_object(
         'userId', fu."UserId",
         'name', fu."Name",
@@ -106,13 +106,13 @@ SELECT
   f."RejectReason", 
   f."CancelReason", 
   f."RequestNo", 
+  f."Steps",
   f."DocRequestFile", 
   f."DocRequestClassification",
   f."DocRequestStamp",
   f."DocRequirementFile", 
   f."DocRequirementClassification",
   f."DocRequirementStamp",
-  f."Steps",
   f."AssignedDepartmentId",
   f."UserDepartmentId",
 
@@ -198,13 +198,13 @@ FROM (
     dc."RejectReason",
     dc."CancelReason",
     dc."RequestNo",
+    dc."Steps",
     dc."DocRequestFile", 
     dc."DocRequestClassification",
     dc."DocRequestStamp",
     dc."DocRequirementFile", 
     dc."DocRequirementClassification",
     dc."DocRequirementStamp",
-    dc."Steps",
     json_build_object(
       'userId', fu."UserId",
       'name', fu."Name",
@@ -322,7 +322,7 @@ export async function createDocRequestWorkflow(
 export async function updateDocRequest(
   docRequestId,
   description,
-  documentFile = {}
+  docRequestFile = {}
 ) {
   const sql = `
     UPDATE dbo."DocRequest" set 
@@ -332,7 +332,7 @@ export async function updateDocRequest(
     WHERE "DocRequestId" = $1
     RETURNING *;
   `;
-  const params = [docRequestId, description, documentFile];
+  const params = [docRequestId, description, docRequestFile ];
   const result = await pool.query(sql, params);
   return camelcaseKeys(result.rows[0]);
 }
