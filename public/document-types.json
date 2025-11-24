@@ -181,5 +181,14 @@
   },
   {
     "ENDORSEMENT_LETTER": "Endorsement Letter"
+  },
+  {
+    "APPROVAL_SLIP": "Approval Slip"
+  },
+  {
+    "RESERVATION_SLIP": "Reservation Slip"
+  },
+  {
+    "DISPOSITION_FORM": "Disposition Form"
   }
 ]

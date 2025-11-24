@@ -2,12 +2,14 @@ import { env } from "../config/env.js";
 import {
   getDocRequestById,
   updateDocRequestWorkflowStatus,
+  updateDocRequestWorkflowFile,
   updateDocRequestStatus,
 } from "../services/doc-request.service.js";
 import {
   ERROR_DOCREQUEST_NOT_FOUND,
   DOCREQUEST_STATUS,
   UPDATE_SUCCESS,
+  UPDATE_WORKFLOW_SUCCESS
 } from "../constants/doc-request.constant.js";
 import {
   getUserById,
@@ -19,6 +21,7 @@ import { loadDocumentTypes } from "../services/common.service.js";
 import { createNotification } from "../services/notifications.service.js";
 import { REQUEST_NOTIF } from "../constants/notifications.constant.js";
 import NodeCache from "node-cache";
+import cloudinary from "../config/cloudinaryConfig.js";
 // Cache (TTL = 60s)
 const cache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
 
@@ -309,4 +312,69 @@ export async function approveStep(req, res) {
   }
 
   return res.json({ success: true, data: docRequest, message: UPDATE_SUCCESS });
+}
+
+export async function upload(req, res) {
+  const { docRequestId } = req.params;
+  let { step } = req.body;
+  if(isNaN(Number(step))) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Step should be a number" });
+  }
+  const { filename, mimeType, size, buffer } = req.file; // { filename, mimeType, size, buffer } | null
+
+  let docRequest;
+  try {
+    // ensure the doc request exists
+    docRequest = await getDocRequestById(docRequestId);
+    if (!docRequest) {
+      return res
+        .status(400)
+        .json({ success: false, message: ERROR_DOCREQUEST_NOT_FOUND });
+    }
+    const public_id = `documents/${filename}`;
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: "raw",
+          public_id, // stable name (folder + clean base)
+          overwrite: true, // replace if same public_id
+          use_filename: false, // we control public_id ourselves
+          unique_filename: false,
+        },
+        (err, result) => (err ? reject(err) : resolve(result))
+      );
+      stream.end(buffer);
+    });
+
+    docRequest?.steps?.forEach(x=> {
+      if(Number(x.step) === Number(step)) {
+        x.attachmentFile = {
+          filename,
+          mimeType,
+          publicId: uploadResult.public_id,
+          createdAt: uploadResult.created_at,
+          bytes: uploadResult.bytes,
+          signature: uploadResult.signature,
+          resourceType: uploadResult.resource_type,
+          displayName: uploadResult.display_name,
+          url: uploadResult.url,
+          secureUrl: uploadResult.secure_url,
+        };
+        return;
+      }
+    });
+
+    docRequest = await updateDocRequestWorkflowFile(
+      docRequestId,
+      docRequest?.steps
+    );
+    docRequest = await getDocRequestById(docRequestId);
+    docRequest.purposeName = documentTypesobj[docRequest.purpose];
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+
+  return res.json({ success: true, data: docRequest, message: UPDATE_WORKFLOW_SUCCESS });
 }

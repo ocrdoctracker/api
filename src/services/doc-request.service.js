@@ -432,6 +432,23 @@ export async function updateDocRequestFile(
   return camelcaseKeys(result.rows[0]);
 }
 
+export async function updateDocRequestWorkflowFile(
+  docRequestId,
+  steps,
+) {
+  const sql = `
+    UPDATE dbo."DocRequest"
+    SET "Steps" = $2, "DateLastUpdated" = NOW() WHERE "DocRequestId" = $1
+    RETURNING *;
+`;
+  const params = [
+    docRequestId,
+    JSON.stringify(steps),
+  ];
+  const result = await pool.query(sql, params);
+  return camelcaseKeys(result.rows[0]);
+}
+
 export async function deleteDocRequest(docRequestId) {
   const sql = `
   UPDATE dbo."DocRequest" SET "Active" = false WHERE "DocRequestId" = $1;
