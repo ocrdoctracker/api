@@ -70,12 +70,15 @@ export async function updateUserPassword(userId, passwordHash) {
   return camelcaseKeys(result.rows[0]);
 }
 
-export async function getAllUserByDepartment(departmentId) {
+export async function getAllUserByDepartment(departmentIds) { 
   const sql = `
     SELECT *
     FROM dbo."User"
-    WHERE "DepartmentId" = $1 AND "Active" = true;
+    WHERE "DepartmentId" = ANY($1)
+      AND "Active" = true;
   `;
-  const result = await pool.query(sql, [departmentId]);
+  
+  const result = await pool.query(sql, [departmentIds]);
   return camelcaseKeys(result.rows);
 }
+

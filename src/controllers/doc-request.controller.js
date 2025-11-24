@@ -312,7 +312,7 @@ export async function create(req, res) {
     docRequest = await getDocRequestById(docRequest?.docRequestId);
     docRequest.purposeName = documentTypesobj[docRequest.purpose];
     const getAllUsers = await getAllUserByDepartment(
-      docRequest?.assignedDepartment?.departmentId
+      [docRequest?.assignedDepartment?.departmentId??0, ...docRequest?.steps?.map(x=>x.departmentId)]
     );
     const notifications = [];
     for (const user of getAllUsers) {
@@ -480,7 +480,7 @@ export async function updateStatus(req, res) {
         docRequest?.requestStatus === DOCREQUEST_STATUS.CLOSED
       ) {
         const getAllUsers = await getAllUserByDepartment(
-          docRequest?.assignedDepartment?.departmentId
+          [docRequest?.assignedDepartment?.departmentId??0, ...docRequest?.steps?.map(x=>x.departmentId)]
         );
         users = [...getAllUsers];
       } else {

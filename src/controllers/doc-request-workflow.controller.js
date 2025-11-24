@@ -285,7 +285,7 @@ export async function approveStep(req, res) {
         docRequest?.requestStatus === DOCREQUEST_STATUS.CLOSED
       ) {
         const getAllUsers = await getAllUserByDepartment(
-          docRequest?.assignedDepartment?.departmentId
+          docRequest?.steps?.map(x=>x.departmentId)
         );
         users = [...getAllUsers];
       } else {
