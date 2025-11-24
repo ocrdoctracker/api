@@ -311,8 +311,9 @@ export async function create(req, res) {
     }
     docRequest = await getDocRequestById(docRequest?.docRequestId);
     docRequest.purposeName = documentTypesobj[docRequest.purpose];
+    const stepsDepartmentIds = docRequest?.steps?.length > 0 ? docRequest?.steps?.map(x=>x.departmentId) : [];
     const getAllUsers = await getAllUserByDepartment(
-      [docRequest?.assignedDepartment?.departmentId??0, ...docRequest?.steps?.map(x=>x.departmentId)]
+      [docRequest?.assignedDepartment?.departmentId??0, ...stepsDepartmentIds]
     );
     const notifications = [];
     for (const user of getAllUsers) {
@@ -479,8 +480,9 @@ export async function updateStatus(req, res) {
         docRequest?.requestStatus === DOCREQUEST_STATUS.CANCELLED ||
         docRequest?.requestStatus === DOCREQUEST_STATUS.CLOSED
       ) {
+        const stepsDepartmentIds = docRequest?.steps?.length > 0 ? docRequest?.steps?.map(x=>x.departmentId) : [];
         const getAllUsers = await getAllUserByDepartment(
-          [docRequest?.assignedDepartment?.departmentId??0, ...docRequest?.steps?.map(x=>x.departmentId)]
+          [docRequest?.assignedDepartment?.departmentId??0, ...stepsDepartmentIds]
         );
         users = [...getAllUsers];
       } else {
